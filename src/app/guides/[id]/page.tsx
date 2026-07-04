@@ -37,14 +37,14 @@ export default async function GuideDetailPage({ params }: PageProps) {
   const guideUser = Array.isArray(guide.users) ? guide.users[0] : guide.users
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20 dark:bg-slate-950 dark:text-slate-100">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <section className="lg:col-span-5 bg-slate-900/50 border border-slate-800 rounded-3xl p-8 h-fit space-y-6">
-          <div className="w-24 h-24 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 text-4xl font-black shadow-inner">
+        <section className="lg:col-span-5 bg-white/80 border border-slate-200 rounded-3xl p-8 h-fit space-y-6 dark:bg-slate-900/50 dark:border-slate-800">
+          <div className="w-24 h-24 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-emerald-600 text-4xl font-black shadow-inner dark:bg-slate-800 dark:border-slate-700 dark:text-emerald-400">
             {guideUser?.nama_lengkap?.charAt(0) || 'G'}
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">{guideUser?.nama_lengkap || 'Tour Guide'}</h1>
+            <h1 className="text-3xl font-extrabold text-slate-950 tracking-tight dark:text-white">{guideUser?.nama_lengkap || 'Tour Guide'}</h1>
             <p className="text-slate-500 text-sm mt-1">{guideUser?.email}</p>
           </div>
           <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold uppercase ${guide.is_available ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
@@ -54,20 +54,20 @@ export default async function GuideDetailPage({ params }: PageProps) {
         </section>
 
         <section className="lg:col-span-7 space-y-6">
-          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 space-y-3">
-            <h2 className="text-base font-bold text-white flex items-center gap-2 uppercase tracking-wider"><Award className="w-5 h-5 text-emerald-400" />Spesialisasi</h2>
-            <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line bg-slate-950/40 border border-slate-900 rounded-xl p-4">{guide.keahlian}</p>
+          <div className="bg-white/80 border border-slate-200 rounded-2xl p-6 space-y-3 dark:bg-slate-900/40 dark:border-slate-800">
+            <h2 className="text-base font-bold text-slate-950 flex items-center gap-2 uppercase tracking-wider dark:text-white"><Award className="w-5 h-5 text-emerald-400" />Spesialisasi</h2>
+            <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line bg-slate-50 border border-slate-200 rounded-xl p-4 dark:text-slate-300 dark:bg-slate-950/40 dark:border-slate-900">{guide.keahlian}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-white/80 border border-slate-200 rounded-2xl p-6 dark:bg-slate-900/40 dark:border-slate-800">
               <span className="text-slate-500 text-xs uppercase font-bold tracking-wider">Tarif Pemanduan</span>
               <div className="text-2xl font-black text-emerald-400 mt-2 flex items-center gap-1"><DollarSign className="w-6 h-6" />Rp {guide.tarif_per_hari.toLocaleString('id-ID')}</div>
               <p className="text-slate-500 text-xs mt-1">per hari layanan</p>
             </div>
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-white/80 border border-slate-200 rounded-2xl p-6 dark:bg-slate-900/40 dark:border-slate-800">
               <span className="text-slate-500 text-xs uppercase font-bold tracking-wider">Cara Menyewa</span>
-              <p className="text-slate-300 text-sm mt-2 leading-relaxed">Pilih destinasi wisata, lalu pilih guide ini pada form pemesanan agar tiket dan jasa guide masuk dalam satu transaksi.</p>
+              <p className="text-slate-700 text-sm mt-2 leading-relaxed dark:text-slate-300">Pilih destinasi wisata, lalu pilih guide ini pada form pemesanan agar tiket dan jasa guide masuk dalam satu transaksi.</p>
             </div>
           </div>
 

@@ -92,8 +92,8 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
             </div>
             <div className="space-y-1">
               <h2 className="text-base font-bold text-emerald-400">Transaksi Berhasil Dibuat!</h2>
-              <p className="text-slate-300 text-xs leading-relaxed max-w-xl">
-                Tiket untuk <strong className="text-white">{newBookingDetails.wisata?.nama_wisata}</strong>{newBookingDetails.guides?.users?.nama_lengkap ? <> dengan guide <strong className="text-white">{newBookingDetails.guides.users.nama_lengkap}</strong></> : null} pada tanggal {new Date(newBookingDetails.tanggal_kunjungan).toLocaleDateString('id-ID', { dateStyle: 'medium' })} telah dibuat sebagai satu transaksi dengan status <strong>Pending</strong>.
+              <p className="text-slate-700 text-xs leading-relaxed max-w-xl dark:text-slate-300">
+                Tiket untuk <strong className="text-slate-950 dark:text-white">{newBookingDetails.wisata?.nama_wisata}</strong>{newBookingDetails.guides?.users?.nama_lengkap ? <> dengan guide <strong className="text-slate-950 dark:text-white">{newBookingDetails.guides.users.nama_lengkap}</strong></> : null} pada tanggal {new Date(newBookingDetails.tanggal_kunjungan).toLocaleDateString('id-ID', { dateStyle: 'medium' })} telah dibuat sebagai satu transaksi dengan status <strong>Pending</strong>.
               </p>
               <div className="text-[10px] text-slate-500">ID Pesanan: {newBookingDetails.id}</div>
             </div>
@@ -111,8 +111,8 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
       {/* DASHBOARD HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Halo, Selamat Datang!</h1>
-          <p className="text-slate-400 text-sm mt-1">Cari destinasi seru berikutnya, sewa tour guide berpengalaman, dan pantau pemesanan Anda.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Halo, Selamat Datang!</h1>
+          <p className="text-slate-600 text-sm mt-1 dark:text-slate-400">Cari destinasi seru berikutnya, sewa tour guide berpengalaman, dan pantau pemesanan Anda.</p>
         </div>
         <Link
           href="/wisata"
@@ -125,24 +125,24 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
 
       {/* BOOKING HISTORY TABLE */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-950 flex items-center gap-2 dark:text-white">
           <ShoppingBag className="w-5 h-5 text-emerald-400" />
           <span>Riwayat Pemesanan Anda</span>
         </h2>
 
         {bookings.length === 0 ? (
-          <div className="border border-slate-900 bg-slate-900/20 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-900 text-slate-600 border border-slate-800">
+          <div className="border border-slate-200 bg-white/80 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4 dark:border-slate-900 dark:bg-slate-900/20">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-900 dark:text-slate-600 dark:border-slate-800">
               <Calendar className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-slate-300">Belum Ada Riwayat Pemesanan</h3>
+            <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">Belum Ada Riwayat Pemesanan</h3>
             <p className="text-slate-500 text-xs max-w-sm mx-auto leading-relaxed">
               Anda belum memesan tiket wisata apa pun. Temukan petualangan Anda hari ini dan buat pemesanan tiket dengan mudah!
             </p>
             <div className="pt-2">
               <Link
                 href="/wisata"
-                className="inline-flex items-center gap-1 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg"
+                className="inline-flex items-center gap-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold px-4 py-2 rounded-lg dark:bg-slate-900 dark:hover:bg-slate-850 dark:border-slate-800 dark:text-slate-300"
               >
                 Cari Tempat Wisata Sekarang
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -150,11 +150,11 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
             </div>
           </div>
         ) : (
-          <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-white/80 border border-slate-200 rounded-2xl overflow-hidden shadow-xl dark:bg-slate-900/30 dark:border-slate-800/80">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/50 text-slate-400 font-semibold text-xs uppercase tracking-wider">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
                     <th className="py-3.5 px-5">Nama Tempat Wisata</th>
                     <th className="py-3.5 px-5">Tanggal Kunjungan</th>
                     <th className="py-3.5 px-5 text-center">Jumlah Tiket</th>
@@ -164,17 +164,17 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
                     <th className="py-3.5 px-5 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-850">
                   {bookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-slate-900/20 text-slate-300 transition-colors">
-                      <td className="py-4 px-5 font-bold text-white">{booking.wisata?.nama_wisata || 'Wisata'}</td>
+                    <tr key={booking.id} className="hover:bg-slate-50 text-slate-700 transition-colors dark:hover:bg-slate-900/20 dark:text-slate-300">
+                      <td className="py-4 px-5 font-bold text-slate-950 dark:text-white">{booking.wisata?.nama_wisata || 'Wisata'}</td>
                       <td className="py-4 px-5">
                         {new Date(booking.tanggal_kunjungan).toLocaleDateString('id-ID', { dateStyle: 'medium' })}
                       </td>
                       <td className="py-4 px-5 text-center font-semibold">{booking.jumlah_tiket} pax</td>
-                      <td className="py-4 px-5 text-xs text-slate-400 italic">
+                      <td className="py-4 px-5 text-xs text-slate-500 italic dark:text-slate-400">
                         {booking.guides?.users?.nama_lengkap ? (
-                          <span className="text-slate-300 not-italic font-medium">{booking.guides.users.nama_lengkap}</span>
+                          <span className="text-slate-700 not-italic font-medium dark:text-slate-300">{booking.guides.users.nama_lengkap}</span>
                         ) : (
                           'Tanpa Guide'
                         )}

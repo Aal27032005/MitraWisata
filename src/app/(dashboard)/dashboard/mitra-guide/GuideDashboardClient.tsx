@@ -109,21 +109,21 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2 dark:text-white">
           <Compass className="w-7 h-7 text-emerald-400" />
           <span>Pengaturan Layanan Tour Guide</span>
         </h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <p className="text-slate-600 text-sm mt-1 dark:text-slate-400">
           Kelola profil publik, ubah tarif pemanduan, dan atur jadwal ketersediaan Anda.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* LEFT COLUMN: EDIT FORM */}
-        <div className="lg:col-span-7 bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-850 pb-4">
+        <div className="lg:col-span-7 bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl space-y-6 dark:bg-slate-900/40 dark:border-slate-800/80">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-850">
             <div>
-              <h2 className="text-base font-bold text-white">Profil Layanan Guide</h2>
+              <h2 className="text-base font-bold text-slate-950 dark:text-white">Profil Layanan Guide</h2>
               <p className="text-slate-500 text-xs mt-1">{isEditing ? 'Mode edit aktif.' : 'Mode preview read-only aktif setelah data tersimpan.'}</p>
             </div>
             
@@ -178,7 +178,7 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
                   onChange={(e) => setNamaLengkap(e.target.value)}
                   readOnly={!isEditing}
                   placeholder="Nama lengkap pemandu"
-                  className={`w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
+                  className={`w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
                 />
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
                   onChange={(e) => setTarif(Math.max(0, parseInt(e.target.value, 10) || 0))}
                   readOnly={!isEditing}
                   placeholder="Contoh: 150000"
-                  className={`w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
+                  className={`w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
                 />
               </div>
             </div>
@@ -219,16 +219,16 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
                 onChange={(e) => setKeahlian(e.target.value)}
                 readOnly={!isEditing}
                 placeholder="Contoh: Menguasai Bahasa Inggris &amp; Jepang. Spesialisasi sejarah pura Bali kuno dan trekking alam."
-                className={`w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2.5 px-3.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none transition-all duration-200 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
+                className={`w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2.5 px-3.5 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none transition-all duration-200 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
               />
             </div>
 
-            <div className="pt-4 border-t border-slate-850 flex justify-end gap-3">
+            <div className="pt-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-850">
               {!isEditing ? (
                 <button
                   type="button"
                   onClick={handleStartEdit}
-                  className="bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-200 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors cursor-pointer"
+                  className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors cursor-pointer dark:bg-slate-950 dark:border-slate-800 dark:hover:bg-slate-900 dark:text-slate-200"
                 >
                   Edit Profil
                 </button>
@@ -238,7 +238,7 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
                     type="button"
                     onClick={handleCancelEdit}
                     disabled={isSaving}
-                    className="bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-300 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                    className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 dark:bg-slate-950 dark:border-slate-800 dark:hover:bg-slate-900 dark:text-slate-300"
                   >
                     Batal
                   </button>
@@ -261,24 +261,24 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
 
         {/* RIGHT COLUMN: PREVIEW CARD */}
         <div className="lg:col-span-5 flex flex-col justify-start space-y-4">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase tracking-wider dark:text-slate-400">
             <Eye className="w-4 h-4 text-emerald-400" />
             <span>Pratinjau Profil Wisatawan</span>
           </div>
 
           {/* Premium Preview Card */}
-          <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl relative group">
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-2xl overflow-hidden shadow-2xl relative group dark:bg-slate-900/60 dark:border-slate-800/80">
             {/* Design accents */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
             {/* Profile Card Header */}
             <div className="p-6 pb-4 flex items-start justify-between">
               <div className="flex gap-4">
-                <div className="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 text-xl font-bold flex-shrink-0 shadow-inner">
+                <div className="w-14 h-14 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-emerald-600 text-xl font-bold flex-shrink-0 shadow-inner dark:bg-slate-800 dark:border-slate-700 dark:text-emerald-400">
                   {namaLengkap.charAt(0) || 'G'}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold text-white truncate flex items-center gap-1.5">
+                  <h3 className="text-lg font-bold text-slate-950 truncate flex items-center gap-1.5 dark:text-white">
                     {namaLengkap || 'Nama Guide'}
                     <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
                   </h3>
@@ -297,20 +297,20 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
             </div>
 
             {/* Profile Card Body */}
-            <div className="px-6 py-4 border-t border-slate-850 space-y-4">
+            <div className="px-6 py-4 border-t border-slate-200 space-y-4 dark:border-slate-850">
               {/* Expertise Area */}
               <div className="space-y-1.5">
                 <div className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider flex items-center gap-1">
                   <Award className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Keahlian &amp; Spesialisasi</span>
                 </div>
-                <p className="text-slate-300 text-xs leading-relaxed italic whitespace-pre-line bg-slate-950/40 border border-slate-900 p-3 rounded-lg">
+                <p className="text-slate-700 text-xs leading-relaxed italic whitespace-pre-line bg-slate-50 border border-slate-200 p-3 rounded-lg dark:text-slate-300 dark:bg-slate-950/40 dark:border-slate-900">
                   {keahlian || 'Belum menulis spesialisasi...'}
                 </p>
               </div>
 
               {/* Stats / Tarif */}
-              <div className="bg-slate-950/30 border border-slate-850 p-4 rounded-xl flex items-center justify-between">
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between dark:bg-slate-950/30 dark:border-slate-850">
                 <div>
                   <span className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider block">Tarif Pemanduan</span>
                   <span className="text-lg font-bold text-emerald-400 mt-0.5 flex items-center gap-0.5">
@@ -329,7 +329,7 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
             </div>
 
             {/* Disclaimer */}
-            <div className="bg-slate-950/60 text-slate-500 text-[9px] px-6 py-2 border-t border-slate-850 text-center leading-relaxed">
+            <div className="bg-slate-50 text-slate-500 text-[9px] px-6 py-2 border-t border-slate-200 text-center leading-relaxed dark:bg-slate-950/60 dark:border-slate-850">
               *Tampilan ini adalah simulasi profil Anda di halaman pencarian wisatawan.
             </div>
           </div>

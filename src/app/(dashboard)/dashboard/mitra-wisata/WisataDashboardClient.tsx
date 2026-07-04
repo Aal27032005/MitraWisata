@@ -74,11 +74,11 @@ export default function WisataDashboardClient({ wisataList }: Props) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2 dark:text-white">
             <Landmark className="w-7 h-7 text-emerald-400" />
             <span>Manajemen Destinasi Wisata</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Tambahkan, ubah, atau hapus tempat wisata kelolaan Anda.</p>
+          <p className="text-slate-600 text-sm mt-1 dark:text-slate-400">Tambahkan, ubah, atau hapus tempat wisata kelolaan Anda.</p>
         </div>
 
         <button
@@ -92,18 +92,18 @@ export default function WisataDashboardClient({ wisataList }: Props) {
 
       {/* Main Wisata List Grid */}
       {wisataList.length === 0 ? (
-        <div className="border border-dashed border-slate-800 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4 my-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-900 text-slate-500 border border-slate-800">
+        <div className="border border-dashed border-slate-300 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4 my-8 dark:border-slate-800">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
             <Landmark className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-slate-300">Belum Ada Tempat Wisata</h3>
+          <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">Belum Ada Tempat Wisata</h3>
           <p className="text-slate-500 text-xs max-w-sm mx-auto leading-relaxed">
             Anda belum mendaftarkan destinasi wisata. Mulai tambahkan tempat wisata baru agar wisatawan dapat melihat dan memesan tiket.
           </p>
           <div className="pt-2">
             <button
               onClick={() => setIsCreateOpen(true)}
-              className="bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer"
+              className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer dark:bg-slate-900 dark:hover:bg-slate-850 dark:text-slate-300 dark:border-slate-800"
             >
               Tambah Wisata Pertama Anda
             </button>
@@ -112,9 +112,9 @@ export default function WisataDashboardClient({ wisataList }: Props) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {wisataList.map((item) => (
-            <div key={item.id} className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 hover:border-slate-700 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 group">
+            <div key={item.id} className="bg-white/80 backdrop-blur-md border border-slate-200 hover:border-slate-300 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 group dark:bg-slate-900/40 dark:border-slate-800/80 dark:hover:border-slate-700">
               {/* Photo Area */}
-              <div className="h-44 bg-slate-950 relative overflow-hidden flex-shrink-0">
+              <div className="h-44 bg-slate-100 relative overflow-hidden flex-shrink-0 dark:bg-slate-950">
                 {getCoverPhoto(item) ? (
                   <img
                     src={getCoverPhoto(item) || ''}
@@ -122,8 +122,8 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 bg-slate-950 gap-2">
-                    <Compass className="w-10 h-10 text-slate-700 animate-pulse" />
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 bg-slate-100 gap-2 dark:text-slate-600 dark:bg-slate-950">
+                    <Compass className="w-10 h-10 text-slate-400 animate-pulse dark:text-slate-700" />
                     <span className="text-[10px] uppercase font-bold tracking-wider">Tidak Ada Foto</span>
                   </div>
                 )}
@@ -137,11 +137,11 @@ export default function WisataDashboardClient({ wisataList }: Props) {
               {/* Info Body */}
               <div className="p-5 flex-grow flex flex-col justify-between space-y-4">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-white text-base group-hover:text-emerald-400 transition-colors">{item.nama_wisata}</h3>
-                  <p className="text-slate-400 text-xs line-clamp-3 leading-relaxed">{item.deskripsi}</p>
+                  <h3 className="font-bold text-slate-950 text-base group-hover:text-emerald-600 transition-colors dark:text-white dark:group-hover:text-emerald-400">{item.nama_wisata}</h3>
+                  <p className="text-slate-600 text-xs line-clamp-3 leading-relaxed dark:text-slate-400">{item.deskripsi}</p>
                 </div>
 
-                <div className="space-y-4 pt-2 border-t border-slate-850">
+                <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-850">
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
                       <span className="text-slate-500 block text-[10px] uppercase font-semibold">Harga Tiket</span>
@@ -152,7 +152,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                     </div>
                     <div>
                       <span className="text-slate-500 block text-[10px] uppercase font-semibold">Kuota Harian</span>
-                      <span className="font-bold text-slate-300 flex items-center gap-1 mt-0.5">
+                      <span className="font-bold text-slate-700 flex items-center gap-1 mt-0.5 dark:text-slate-300">
                         <Users className="w-3.5 h-3.5 text-slate-500" />
                         {item.kuota_harian} pax
                       </span>
@@ -163,7 +163,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   <div className="flex gap-2">
                     <button
                       onClick={() => openEditModal(item)}
-                      className="flex-1 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold py-2 rounded-lg border border-slate-800 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold py-2 rounded-lg border border-slate-200 transition-all flex items-center justify-center gap-1 cursor-pointer dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-300 dark:border-slate-800"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                       <span>Ubah</span>
@@ -186,16 +186,16 @@ export default function WisataDashboardClient({ wisataList }: Props) {
       {/* CREATE MODAL */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-scale-in">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-scale-in dark:bg-slate-900 dark:border-slate-800">
             {/* Modal Header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h2 className="text-lg font-bold text-slate-950 flex items-center gap-2 dark:text-white">
                 <Landmark className="w-5 h-5 text-emerald-400" />
                 <span>Tambah Wisata Baru</span>
               </h2>
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="text-slate-500 hover:text-slate-950 transition-colors cursor-pointer dark:text-slate-400 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -219,7 +219,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   name="nama_wisata"
                   required
                   placeholder="Contoh: Pantai Kuta, Candi Borobudur"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -232,7 +232,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   rows={4}
                   required
                   placeholder="Tuliskan daya tarik utama destinasi wisata Anda..."
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -247,7 +247,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                     min="0"
                     required
                     placeholder="Contoh: 15000"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -260,7 +260,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                     min="0"
                     required
                     placeholder="Contoh: 100"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   type="url"
                   name="foto_url"
                   placeholder="https://example.com/foto.jpg"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -285,15 +285,15 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   name="foto_urls"
                   rows={3}
                   placeholder="Satu URL per baris, atau pisahkan dengan koma"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+              <div className="pt-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-300 text-sm font-semibold px-4 py-2 rounded-lg cursor-pointer"
+                  className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg cursor-pointer dark:bg-slate-950 dark:border-slate-800 dark:hover:bg-slate-900 dark:text-slate-300"
                 >
                   Batal
                 </button>
@@ -317,10 +317,10 @@ export default function WisataDashboardClient({ wisataList }: Props) {
       {/* EDIT MODAL */}
       {isEditOpen && selectedWisata && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-scale-in">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-scale-in dark:bg-slate-900 dark:border-slate-800">
             {/* Modal Header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h2 className="text-lg font-bold text-slate-950 flex items-center gap-2 dark:text-white">
                 <Landmark className="w-5 h-5 text-emerald-400" />
                 <span>Ubah Detail Wisata</span>
               </h2>
@@ -329,7 +329,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   setIsEditOpen(false)
                   setSelectedWisata(null)
                 }}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="text-slate-500 hover:text-slate-950 transition-colors cursor-pointer dark:text-slate-400 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -357,7 +357,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   required
                   defaultValue={selectedWisata.nama_wisata}
                   placeholder="Contoh: Pantai Kuta, Candi Borobudur"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -371,7 +371,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   required
                   defaultValue={selectedWisata.deskripsi}
                   placeholder="Tuliskan daya tarik utama destinasi wisata Anda..."
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -387,7 +387,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                     required
                     defaultValue={selectedWisata.harga_tiket}
                     placeholder="Contoh: 15000"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -401,7 +401,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                     required
                     defaultValue={selectedWisata.kuota_harian}
                     placeholder="Contoh: 100"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -415,7 +415,7 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   name="foto_url"
                   defaultValue={selectedWisata.foto_url || ''}
                   placeholder="https://example.com/foto.jpg"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -428,18 +428,18 @@ export default function WisataDashboardClient({ wisataList }: Props) {
                   rows={3}
                   defaultValue={(selectedWisata.foto_urls?.length ? selectedWisata.foto_urls : selectedWisata.foto_url ? [selectedWisata.foto_url] : []).join('\n')}
                   placeholder="Satu URL per baris, atau pisahkan dengan koma"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none"
+                  className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2 px-3 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+              <div className="pt-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditOpen(false)
                     setSelectedWisata(null)
                   }}
-                  className="bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-300 text-sm font-semibold px-4 py-2 rounded-lg cursor-pointer"
+                  className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg cursor-pointer dark:bg-slate-950 dark:border-slate-800 dark:hover:bg-slate-900 dark:text-slate-300"
                 >
                   Batal
                 </button>

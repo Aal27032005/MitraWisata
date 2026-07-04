@@ -71,44 +71,44 @@ export default function AdminDashboardClient({ stats, bookings }: Props) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2 dark:text-white">
           <Shield className="w-7 h-7 text-emerald-400" />
           <span>Panel Administrator</span>
         </h1>
-        <p className="text-slate-400 text-sm mt-1">Audit transaksi tiket pariwisata global dan verifikasi status pembayaran.</p>
+        <p className="text-slate-600 text-sm mt-1 dark:text-slate-400">Audit transaksi tiket pariwisata global dan verifikasi status pembayaran.</p>
       </div>
 
       {/* Grid Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5">
-          <div className="flex justify-between items-start text-slate-400">
+        <div className="bg-white/80 border border-slate-200 rounded-xl p-5 dark:bg-slate-900/50 dark:border-slate-800/80">
+          <div className="flex justify-between items-start text-slate-600 dark:text-slate-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Pengguna</span>
             <Users className="w-5 h-5 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold mt-2 text-white">{stats.totalUsers}</div>
+          <div className="text-2xl font-bold mt-2 text-slate-950 dark:text-white">{stats.totalUsers}</div>
           <div className="text-[10px] text-slate-500 mt-1">Akun terdaftar di database</div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5">
-          <div className="flex justify-between items-start text-slate-400">
+        <div className="bg-white/80 border border-slate-200 rounded-xl p-5 dark:bg-slate-900/50 dark:border-slate-800/80">
+          <div className="flex justify-between items-start text-slate-600 dark:text-slate-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Destinasi</span>
             <Landmark className="w-5 h-5 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold mt-2 text-white">{stats.totalWisata}</div>
+          <div className="text-2xl font-bold mt-2 text-slate-950 dark:text-white">{stats.totalWisata}</div>
           <div className="text-[10px] text-slate-500 mt-1">Destinasi wisata terdaftar</div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5">
-          <div className="flex justify-between items-start text-slate-400">
+        <div className="bg-white/80 border border-slate-200 rounded-xl p-5 dark:bg-slate-900/50 dark:border-slate-800/80">
+          <div className="flex justify-between items-start text-slate-600 dark:text-slate-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Booking</span>
             <ShoppingBag className="w-5 h-5 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold mt-2 text-white">{stats.totalBookings}</div>
+          <div className="text-2xl font-bold mt-2 text-slate-950 dark:text-white">{stats.totalBookings}</div>
           <div className="text-[10px] text-slate-500 mt-1">Semua status pemesanan</div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5">
-          <div className="flex justify-between items-start text-slate-400">
+        <div className="bg-white/80 border border-slate-200 rounded-xl p-5 dark:bg-slate-900/50 dark:border-slate-800/80">
+          <div className="flex justify-between items-start text-slate-600 dark:text-slate-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Omzet Sukses</span>
             <DollarSign className="w-5 h-5 text-emerald-400" />
           </div>
@@ -131,21 +131,21 @@ export default function AdminDashboardClient({ stats, bookings }: Props) {
 
       {/* Transaction Table */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-950 flex items-center gap-2 dark:text-white">
           <span>Audit Transaksi Global</span>
           {isPending && <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />}
         </h2>
 
         {bookings.length === 0 ? (
-          <div className="border border-slate-900 bg-slate-900/10 rounded-2xl p-12 text-center text-slate-500 text-sm">
+          <div className="border border-slate-200 bg-white/70 rounded-2xl p-12 text-center text-slate-500 text-sm dark:border-slate-900 dark:bg-slate-900/10">
             Belum ada transaksi pemesanan tiket yang masuk ke sistem.
           </div>
         ) : (
-          <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="bg-white/80 border border-slate-200 rounded-2xl overflow-hidden shadow-2xl dark:bg-slate-900/30 dark:border-slate-800/80">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/50 text-slate-400 font-semibold text-xs uppercase tracking-wider">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
                     <th className="py-3.5 px-5">Customer</th>
                     <th className="py-3.5 px-5">Destinasi Wisata</th>
                     <th className="py-3.5 px-5">Tanggal Kunjungan</th>
@@ -156,14 +156,14 @@ export default function AdminDashboardClient({ stats, bookings }: Props) {
                     <th className="py-3.5 px-5 text-center">Aksi Administrator</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-850">
                   {bookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-slate-900/20 text-slate-300 transition-colors">
+                    <tr key={booking.id} className="hover:bg-slate-50 text-slate-700 transition-colors dark:hover:bg-slate-900/20 dark:text-slate-300">
                       <td className="py-4 px-5">
-                        <div className="font-bold text-white">{booking.customer?.nama_lengkap}</div>
+                        <div className="font-bold text-slate-950 dark:text-white">{booking.customer?.nama_lengkap}</div>
                         <div className="text-[10px] text-slate-500 mt-0.5">{booking.customer?.email}</div>
                       </td>
-                      <td className="py-4 px-5 font-medium text-white">
+                      <td className="py-4 px-5 font-medium text-slate-950 dark:text-white">
                         {booking.wisata?.nama_wisata}
                       </td>
                       <td className="py-4 px-5">
@@ -174,7 +174,7 @@ export default function AdminDashboardClient({ stats, bookings }: Props) {
                       </td>
                       <td className="py-4 px-5 text-xs">
                         {booking.guides?.users?.nama_lengkap ? (
-                          <span className="text-slate-300 font-medium">{booking.guides.users.nama_lengkap}</span>
+                          <span className="text-slate-700 font-medium dark:text-slate-300">{booking.guides.users.nama_lengkap}</span>
                         ) : (
                           <span className="text-slate-500 italic">Tanpa Guide</span>
                         )}

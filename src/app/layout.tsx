@@ -18,6 +18,18 @@ export const metadata: Metadata = {
   description: "Platform Manajemen Tempat Wisata Lokal & Jasa Tour Guide Mandiri berbasis B2B2C SaaS.",
 };
 
+const themeInitScript = `
+try {
+  const storedTheme = localStorage.getItem('mitrawisata-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+} catch (_) {}
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,6 +41,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <Navbar />
         {children}
       </body>

@@ -21,7 +21,16 @@ export default async function MitraWisataDashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let wisataList = []
+  let wisataList: {
+    id: string
+    mitra_id: string
+    nama_wisata: string
+    deskripsi: string
+    harga_tiket: number
+    kuota_harian: number
+    foto_url: string | null
+    foto_urls: string[]
+  }[] = []
   
   if (user) {
     const { data, error } = await supabase
