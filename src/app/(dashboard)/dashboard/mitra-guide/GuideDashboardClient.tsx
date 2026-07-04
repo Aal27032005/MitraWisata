@@ -1,8 +1,8 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { FormEvent, useState, useTransition } from 'react'
 import { updateGuideProfileAction, toggleGuideAvailabilityAction } from './actions'
-import { Compass, Award, DollarSign, Check, AlertCircle, RefreshCw, Eye, Sparkles } from 'lucide-react'
+import { Compass, Award, DollarSign, Check, AlertCircle, RefreshCw, Eye, Sparkles, UserRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface GuideProfile {
@@ -28,27 +28,71 @@ type ActionState = {
   success?: string
 } | null
 
+type SavedProfile = {
+  nama_lengkap: string
+  tarif_per_hari: number
+  keahlian: string
+}
+
 export default function GuideDashboardClient({ guideProfile, userData }: Props) {
   const router = useRouter()
+  const initialProfile: SavedProfile = {
+    nama_lengkap: userData.nama_lengkap,
+    tarif_per_hari: guideProfile.tarif_per_hari,
+    keahlian: guideProfile.keahlian,
+  }
+
   // Local states for real-time preview
+  const [namaLengkap, setNamaLengkap] = useState(userData.nama_lengkap)
   const [tarif, setTarif] = useState(guideProfile.tarif_per_hari)
   const [keahlian, setKeahlian] = useState(guideProfile.keahlian)
+  const [savedProfile, setSavedProfile] = useState(initialProfile)
   const [isAvailable, setIsAvailable] = useState(guideProfile.is_available)
   const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [state, setState] = useState<ActionState>(null)
   const [isPendingToggle, startToggleTransition] = useTransition()
 
-  // React 19 Action States
-  const [state, formAction, isPending] = useActionState(
-    async (prevState: ActionState, formData: FormData) => {
-      const res = await updateGuideProfileAction(prevState, formData)
-      if (res.success) {
-        setIsEditing(false)
-        router.refresh()
-      }
-      return res
-    },
-    null
-  )
+  const handleStartEdit = () => {
+    setState(null)
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setNamaLengkap(savedProfile.nama_lengkap)
+    setTarif(savedProfile.tarif_per_hari)
+    setKeahlian(savedProfile.keahlian)
+    setState(null)
+    setIsEditing(false)
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!isEditing || isSaving) return
+
+    setIsSaving(true)
+    setState(null)
+
+    const formData = new FormData()
+    formData.set('nama_lengkap', namaLengkap)
+    formData.set('tarif_per_hari', String(tarif))
+    formData.set('keahlian', keahlian)
+    formData.set('is_available', isAvailable ? 'true' : 'false')
+
+    const res = await updateGuideProfileAction(null, formData)
+    setIsSaving(false)
+    setState(res)
+
+    if (res.success) {
+      setSavedProfile({
+        nama_lengkap: namaLengkap,
+        tarif_per_hari: tarif,
+        keahlian,
+      })
+      setIsEditing(false)
+      router.refresh()
+    }
+  }
 
   const handleToggle = async () => {
     startToggleTransition(async () => {
@@ -102,7 +146,7 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
             </button>
           </div>
 
-          <form action={formAction} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {state?.error && (
               <div className="bg-red-500/15 border border-red-500/30 text-red-400 text-xs p-3 rounded-lg flex items-center gap-2 font-medium">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -117,8 +161,27 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
               </div>
             )}
 
-            {/* Hidden Input for Ketersediaan */}
-            <input type="hidden" name="is_available" value={isAvailable ? 'true' : 'false'} />
+            <div>
+              <label htmlFor="nama_lengkap" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                Nama Lengkap
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                  <UserRound className="w-4 h-4" />
+                </span>
+                <input
+                  id="nama_lengkap"
+                  name="nama_lengkap"
+                  type="text"
+                  required
+                  value={namaLengkap}
+                  onChange={(e) => setNamaLengkap(e.target.value)}
+                  readOnly={!isEditing}
+                  placeholder="Nama lengkap pemandu"
+                  className={`w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
+                />
+              </div>
+            </div>
 
             <div>
               <label htmlFor="tarif_per_hari" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
@@ -135,7 +198,7 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
                   min="0"
                   required
                   value={tarif}
-                  onChange={(e) => setTarif(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setTarif(Math.max(0, parseInt(e.target.value, 10) || 0))}
                   readOnly={!isEditing}
                   placeholder="Contoh: 150000"
                   className={`w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
@@ -164,23 +227,33 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
               {!isEditing ? (
                 <button
                   type="button"
-                  onClick={() => setIsEditing(true)}
+                  onClick={handleStartEdit}
                   className="bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-200 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors cursor-pointer"
                 >
                   Edit Profil
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  {isPending ? (
-                    <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <span>Simpan Perubahan</span>
-                  )}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-300 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 text-sm font-bold px-6 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span>Simpan Perubahan</span>
+                    )}
+                  </button>
+                </>
               )}
             </div>
           </form>
@@ -202,11 +275,11 @@ export default function GuideDashboardClient({ guideProfile, userData }: Props) 
             <div className="p-6 pb-4 flex items-start justify-between">
               <div className="flex gap-4">
                 <div className="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 text-xl font-bold flex-shrink-0 shadow-inner">
-                  {userData.nama_lengkap.charAt(0)}
+                  {namaLengkap.charAt(0) || 'G'}
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-lg font-bold text-white truncate flex items-center gap-1.5">
-                    {userData.nama_lengkap}
+                    {namaLengkap || 'Nama Guide'}
                     <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
                   </h3>
                   <span className="text-slate-500 text-xs truncate block">{userData.email}</span>

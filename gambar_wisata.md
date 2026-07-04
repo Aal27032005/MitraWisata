@@ -1,23 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
-import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+Wahai AI Agent, saya sudah mengumpulkan daftar URL gambar asli dan akurat untuk 15 katalog destinasi utama aplikasi kita. Tolong mutakhirkan total isi file `scripts/seed-wisata.mjs` menggunakan data terbaru ini. 
 
-loadLocalEnv()
+Gunakan item pertama dari setiap daftar sebagai properti `foto_url` (gambar utama), lalu masukkan sisanya (serta kombinasi gambar utama sebagai variasi) ke dalam array `foto_urls` agar setiap katalog memiliki total 5-6 foto galeri pendukung yang melimpah dan menakjubkan. 
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const explicitMitraId = process.env.SEED_MITRA_ID
-
-if (!supabaseUrl || !supabaseKey) {
-  fail('NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY atau NEXT_PUBLIC_SUPABASE_ANON_KEY wajib tersedia.')
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-})
+Berikut adalah struktur objek `wisataData` yang harus kamu tulis ulang:
 
 const wisataData = [
   {
@@ -233,108 +218,6 @@ const wisataData = [
       "https://mliaimphxbwf.i.optimole.com/KlScy8M-MROiNij8/w:1024/h:768/q:75/https://whiterabbitpeaks.com/wp-content/uploads/2020/01/Main_Kuta.jpg"
     ]
   }
-]
+];
 
-async function main() {
-  const mitraId = explicitMitraId || await findFirstMitraWisataId()
-
-  if (!mitraId) {
-    fail('Tidak menemukan user role mitra_wisata. Set SEED_MITRA_ID=<uuid user mitra_wisata> di .env.local atau buat akun mitra wisata terlebih dahulu.')
-  }
-
-  // Membersihkan duplikasi data berdasarkan properti 'nama' jika ada
-  const seenNames = new Set()
-  const uniqueWisataData = wisataData.filter((wisata) => {
-    const isDuplicate = seenNames.has(wisata.nama)
-    seenNames.add(wisata.nama)
-    return !isDuplicate
-  })
-
-  const payload = uniqueWisataData.map((wisata) => toWisataRow(wisata, mitraId))
-
-  const { error } = await supabase
-    .from('wisata')
-    .upsert(payload, {
-      onConflict: 'mitra_id,nama_wisata',
-    })
-
-  if (error) {
-    fail(`Gagal seed wisata: ${error.message}`)
-  }
-
-  console.log(`Seed wisata selesai: ${payload.length} destinasi dimasukkan/diperbarui.`)
-  console.log(`Mitra wisata owner: ${mitraId}`)
-}
-
-async function findFirstMitraWisataId() {
-  const { data, error } = await supabase
-    .from('users')
-    .select('id')
-    .eq('role', 'mitra_wisata')
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
-
-  if (error) {
-    fail(`Gagal mencari mitra wisata: ${error.message}`)
-  }
-
-  return data?.id || null
-}
-
-function toWisataRow(wisata, mitraId) {
-  const fotoUrls = normalizePhotoUrls(wisata.foto_urls)
-  const fotoUrl = normalizePhotoUrl(wisata.foto_url) || fotoUrls[0] || null
-
-  return {
-    mitra_id: mitraId,
-    nama_wisata: wisata.nama,
-    deskripsi: `${wisata.deskripsi}\n\nLokasi/Provinsi: ${wisata.lokasi}`,
-    harga_tiket: toPositiveInteger(wisata.harga, 25000),
-    kuota_harian: 250,
-    foto_url: fotoUrl,
-    foto_urls: Array.from(new Set([fotoUrl, ...fotoUrls].filter(Boolean))),
-  }
-}
-
-function normalizePhotoUrls(value) {
-  if (!Array.isArray(value)) return []
-  return Array.from(new Set(value.map(normalizePhotoUrl).filter(Boolean)))
-}
-
-function normalizePhotoUrl(value) {
-  const photo = String(value || '').trim()
-  return /^https:\/\//.test(photo) ? photo : ''
-}
-
-function toPositiveInteger(value, fallback) {
-  const parsed = Number.parseInt(String(value ?? ''), 10)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback
-}
-
-function loadLocalEnv() {
-  const envPath = resolve(process.cwd(), '.env.local')
-  if (!existsSync(envPath)) return
-
-  const content = readFileSync(envPath, 'utf8')
-  for (const line of content.split(/\r?\n/)) {
-    const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('#')) continue
-
-    const separatorIndex = trimmed.indexOf('=')
-    if (separatorIndex === -1) continue
-
-    const key = trimmed.slice(0, separatorIndex).trim()
-    const value = trimmed.slice(separatorIndex + 1).trim().replace(/^["']|["']$/g, '')
-    if (!process.env[key]) {
-      process.env[key] = value
-    }
-  }
-}
-
-function fail(message) {
-  console.error(message)
-  process.exit(1)
-}
-
-main()
+Tolong masukkan data array ini ke dalam file seeder tersebut, pastikan fungsi eksekusinya menggunakan skema `.upsert()` Supabase agar aman dari crash, lalu kabari saya jika proses penulisan kodenya telah berhasil kamu lakukan!

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Award, CalendarCheck, Compass, DollarSign } from 'lucide-react'
+import { Award, CalendarCheck, Compass, DollarSign } from 'lucide-react'
 
 export const revalidate = 0
 
@@ -38,16 +38,6 @@ export default async function GuideDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-20">
-      <header className="w-full border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/guides" className="flex items-center gap-2 text-slate-400 hover:text-white text-sm font-semibold transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Kembali ke Katalog Guide
-          </Link>
-          <Link href="/wisata" className="text-emerald-400 hover:text-emerald-300 text-sm font-bold">Pesan Wisata</Link>
-        </div>
-      </header>
-
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
         <section className="lg:col-span-5 bg-slate-900/50 border border-slate-800 rounded-3xl p-8 h-fit space-y-6">
           <div className="w-24 h-24 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 text-4xl font-black shadow-inner">

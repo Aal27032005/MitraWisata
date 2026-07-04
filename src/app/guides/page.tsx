@@ -29,16 +29,6 @@ export default async function GuidesCatalogPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-20">
-      <header className="z-10 w-full border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/wisata" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">
-            <Compass className="w-5 h-5 text-emerald-400" />
-            <span className="font-bold">MitraWisata</span>
-          </Link>
-          <Link href="/dashboard/customer" className="text-slate-400 hover:text-white text-sm font-semibold transition-colors">Dashboard Saya</Link>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
         <section className="space-y-3">
           <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">

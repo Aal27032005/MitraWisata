@@ -1,10 +1,29 @@
 import { createClient } from '@/lib/supabase/server'
-import { Calendar, Compass, ShoppingBag, ArrowRight, MessageSquare, CheckCircle, Clock } from 'lucide-react'
+import { Calendar, Compass, ShoppingBag, ArrowRight, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 interface PageProps {
   searchParams: Promise<{ success_booking?: string }>
+}
+
+interface CustomerBooking {
+  id: string
+  tanggal_kunjungan: string
+  jumlah_tiket: number
+  total_harga: number
+  status: string
+  created_at?: string
+  wisata: {
+    nama_wisata: string
+    harga_tiket: number
+  } | null
+  guides: {
+    tarif_per_hari: number
+    users: {
+      nama_lengkap: string
+    } | null
+  } | null
 }
 
 export const revalidate = 0
@@ -19,7 +38,7 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
   }
 
   // 1. Ambil data semua booking milik customer ini
-  let bookings: any[] = []
+  let bookings: CustomerBooking[] = []
   try {
     const { data, error } = await supabase
       .from('bookings')
@@ -37,14 +56,14 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
       .order('created_at', { ascending: false })
 
     if (!error) {
-      bookings = data || []
+      bookings = (data || []) as unknown as CustomerBooking[]
     }
   } catch (err) {
     console.error('Gagal memuat riwayat booking:', err)
   }
 
   // 2. Ambil detail booking spesifik jika baru saja sukses melakukan pemesanan
-  let newBookingDetails: any = null
+  let newBookingDetails: CustomerBooking | null = null
   if (success_booking) {
     const { data } = await supabase
       .from('bookings')
@@ -59,32 +78,7 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
       .eq('id', success_booking)
       .eq('customer_id', user.id)
       .single()
-    newBookingDetails = data
-  }
-
-  // Generate WhatsApp Message Link Helper
-  const getWhatsAppLink = (booking: any) => {
-    const adminPhone = '6281234567890' // Default Indonesian Admin Phone
-    const hargaTiket = booking.wisata?.harga_tiket || 0
-    const totalTiket = hargaTiket * booking.jumlah_tiket
-    const guideText = booking.guides?.users?.nama_lengkap
-      ? `${booking.guides.users.nama_lengkap} (Rp ${(booking.guides.tarif_per_hari || 0).toLocaleString('id-ID')})`
-      : 'Tanpa Tour Guide'
-    
-    const message = `Halo Admin MitraWisata, saya ingin melakukan konfirmasi pembayaran satu transaksi terpadu.
-    
-Berikut detail pesanan saya:
-- *ID Booking*: ${booking.id}
-- *Tempat Wisata*: ${booking.wisata?.nama_wisata}
-- *Tanggal Kunjungan*: ${new Date(booking.tanggal_kunjungan).toLocaleDateString('id-ID', { dateStyle: 'long' })}
-- *Jumlah Tiket*: ${booking.jumlah_tiket} pax x Rp ${hargaTiket.toLocaleString('id-ID')}
-- *Subtotal Tiket*: Rp ${totalTiket.toLocaleString('id-ID')}
-- *Tour Guide*: ${guideText}
-- *Total Tagihan Akumulatif*: Rp ${booking.total_harga.toLocaleString('id-ID')}
-
-Mohon konfirmasi status pembayaran saya. Terima kasih!`
-
-    return `https://api.whatsapp.com/send?phone=${adminPhone}&text=${encodeURIComponent(message)}`
+    newBookingDetails = data as unknown as CustomerBooking | null
   }
 
   return (
@@ -104,15 +98,13 @@ Mohon konfirmasi status pembayaran saya. Terima kasih!`
               <div className="text-[10px] text-slate-500">ID Pesanan: {newBookingDetails.id}</div>
             </div>
           </div>
-          <a
-            href={getWhatsAppLink(newBookingDetails)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href={`/checkout/qris/${newBookingDetails.id}`}
             className="w-full md:w-auto bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 text-xs font-bold px-5 py-3 rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-emerald-500/10 shrink-0"
           >
-            <MessageSquare className="w-4.5 h-4.5" />
-            <span>Bayar via WhatsApp</span>
-          </a>
+            <ArrowRight className="w-4.5 h-4.5" />
+            <span>Bayar via QRIS</span>
+          </Link>
         </div>
       )}
 
@@ -201,15 +193,13 @@ Mohon konfirmasi status pembayaran saya. Terima kasih!`
                       </td>
                       <td className="py-4 px-5 text-center">
                         {booking.status === 'pending' && (
-                          <a
-                            href={getWhatsAppLink(booking)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <Link
+                            href={`/checkout/qris/${booking.id}`}
                             className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                           >
-                            <MessageSquare className="w-3.5 h-3.5" />
+                            <ArrowRight className="w-3.5 h-3.5" />
                             <span>Bayar</span>
-                          </a>
+                          </Link>
                         )}
                         {booking.status === 'success' && (
                           <span className="text-slate-500 text-xs flex items-center justify-center gap-0.5">

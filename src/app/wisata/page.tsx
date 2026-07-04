@@ -31,30 +31,6 @@ export default async function WisataCatalogPage() {
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute top-[60vh] left-0 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Header/Navbar */}
-      <header className="z-10 w-full border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Compass className="w-6 h-6 text-emerald-400" />
-            <span className="text-xl font-bold tracking-tight text-white">MitraWisata</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/guides"
-              className="text-slate-400 hover:text-white text-sm font-semibold transition-colors"
-            >
-              Katalog Guide
-            </Link>
-            <Link
-              href="/dashboard/customer"
-              className="text-slate-400 hover:text-white text-sm font-semibold transition-colors"
-            >
-              Dashboard Saya
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Banner Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 text-center space-y-4">
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
@@ -66,10 +42,10 @@ export default async function WisataCatalogPage() {
       </section>
 
       {/* MAIN LAYOUT */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
-        {/* DESTINASI WISATA SECTION: Left 8-cols */}
-        <section className="lg:col-span-8 space-y-6">
+        {/* DESTINASI WISATA SECTION */}
+        <section className="space-y-6">
           <h2 className="text-lg font-bold text-white flex items-center gap-2 border-b border-slate-900 pb-3">
             <Landmark className="w-5 h-5 text-emerald-400" />
             <span>Destinasi Wisata Terpopuler ({wisataList?.length || 0})</span>
@@ -84,7 +60,7 @@ export default async function WisataCatalogPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {wisataList.map((item) => {
                 const coverPhoto = getCoverPhoto(item)
 
@@ -141,17 +117,19 @@ export default async function WisataCatalogPage() {
           )}
         </section>
 
-        {/* TOUR GUIDE SIDEBAR: Right 4-cols */}
-        <section className="lg:col-span-4 space-y-6">
-          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 space-y-4 sticky top-24">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Compass className="w-5 h-5 text-emerald-400" />
-              <span>Butuh Tour Guide?</span>
-            </h2>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              Lihat katalog pemandu lengkap untuk membandingkan spesialisasi, tarif, dan status sebelum menyewa bersama tiket wisata.
-            </p>
-            <Link href="/guides" className="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1">
+        {/* TOUR GUIDE SECTION */}
+        <section className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 sm:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Compass className="w-5 h-5 text-emerald-400" />
+                <span>Butuh Tour Guide?</span>
+              </h2>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Lihat katalog pemandu lengkap untuk membandingkan spesialisasi, tarif, dan status sebelum menyewa bersama tiket wisata.
+              </p>
+            </div>
+            <Link href="/guides" className="w-full lg:w-auto bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold px-5 py-3 rounded-lg transition-colors flex items-center justify-center gap-1">
               Lihat Katalog Guide
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>

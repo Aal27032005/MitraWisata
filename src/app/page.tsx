@@ -8,32 +8,6 @@ export default function Home() {
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[600px] h-[600px] rounded-full bg-blue-500/5 blur-[140px] pointer-events-none" />
 
-      {/* Header/Navbar */}
-      <header className="z-10 w-full border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Compass className="w-6 h-6 text-emerald-400" />
-            <span className="text-xl font-bold tracking-tight text-white">MitraWisata</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="text-slate-400 hover:text-white text-sm font-semibold transition-colors"
-            >
-              Masuk
-            </Link>
-            <Link
-              href="/register"
-              className="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-1 group cursor-pointer"
-            >
-              Mulai Gratis
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <main className="flex-grow z-10">
         <section className="py-20 lg:py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-8">

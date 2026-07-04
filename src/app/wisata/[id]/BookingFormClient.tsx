@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import { createBookingAction } from '@/app/booking/actions'
 import Link from 'next/link'
-import { Compass, Calendar, Users, DollarSign, ArrowLeft, ShieldAlert, MapPin, Ticket, X, Images, MessageSquare, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react'
+import { Compass, Calendar, Users, DollarSign, ArrowLeft, ShieldAlert, MapPin, Ticket, X, Images, MessageSquare, ChevronLeft, ChevronRight, BadgeCheck, CheckCircle2, UserRound } from 'lucide-react'
 
 interface Wisata {
   id: string
@@ -44,7 +44,8 @@ export default function BookingFormClient({ wisata, guides }: Props) {
   const selectedGuide = guides.find((g) => g.id === selectedGuideId)
   const guideTarif = selectedGuide ? selectedGuide.tarif_per_hari : 0
   const totalHarga = (jumlahTiket * wisata.harga_tiket) + guideTarif
-  const gallery = Array.from(new Set([...(wisata.foto_urls || []), wisata.foto_url].filter(Boolean))) as string[]
+  const gallerySources = Array.isArray(wisata.foto_urls) ? wisata.foto_urls : []
+  const gallery = Array.from(new Set([...gallerySources, wisata.foto_url].filter(Boolean))) as string[]
   const previewGallery = gallery.length > 0 ? gallery.slice(0, 5) : []
   const lokasi = wisata.lokasi || wisata.alamat || 'Lokasi belum ditambahkan oleh pengelola'
   const activeLightboxPhoto = lightboxIndex !== null ? gallery[lightboxIndex] : null
@@ -64,22 +65,18 @@ export default function BookingFormClient({ wisata, guides }: Props) {
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] rounded-full bg-blue-500/5 blur-[100px] pointer-events-none" />
 
-      {/* Header/Navbar */}
-      <header className="z-10 w-full border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 mb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/wisata" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Katalog</span>
-          </Link>
-          <span className="text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
-            Reservasi Tiket
-          </span>
-        </div>
-      </header>
-
       {/* MAIN CONTAINER */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 relative space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 relative space-y-8 py-8">
         <section className="space-y-5">
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/wisata" className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-4 py-2 text-sm font-semibold text-slate-400 transition-colors hover:text-white">
+              <ArrowLeft className="w-4 h-4" />
+              <span>Kembali ke Katalog</span>
+            </Link>
+            <span className="text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
+              Reservasi Tiket
+            </span>
+          </div>
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div className="space-y-3 max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-300">
@@ -240,30 +237,75 @@ export default function BookingFormClient({ wisata, guides }: Props) {
                 </div>
               </div>
 
+              <input type="hidden" name="guide_id" value={selectedGuideId} />
+
               {/* Pilihan Tour Guide (Opsional) */}
-              <div>
-                <label htmlFor="guide_id" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex justify-between">
-                  <span>Sewa Tour Guide (Opsional)</span>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Sewa Tour Guide (Opsional)
+                  </label>
                   <span className="text-[10px] text-emerald-400 font-bold lowercase tracking-normal">Boleh dikosongkan</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                    <Compass className="w-4 h-4" />
-                  </span>
-                  <select
-                    id="guide_id"
-                    name="guide_id"
-                    value={selectedGuideId}
-                    onChange={(e) => setSelectedGuideId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 cursor-pointer appearance-none"
-                  >
-                    <option value="none">Tanpa Tour Guide</option>
-                    {guides.map((guide) => (
-                      <option key={guide.id} value={guide.id}>
-                        {guide.users?.nama_lengkap} (+ Rp {guide.tarif_per_hari.toLocaleString('id-ID')}/hari)
-                      </option>
-                    ))}
-                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedGuideId('none')}
+                  className={`w-full rounded-2xl border p-4 text-left transition-all ${selectedGuideId === 'none' ? 'border-emerald-500/60 bg-emerald-500/10 shadow-lg shadow-emerald-500/5' : 'border-slate-800 bg-slate-950/50 hover:border-slate-700'}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-500">
+                        <Compass className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white">Tanpa Tour Guide</div>
+                        <p className="text-xs text-slate-500">Lanjutkan hanya dengan tiket masuk destinasi.</p>
+                      </div>
+                    </div>
+                    {selectedGuideId === 'none' && <CheckCircle2 className="h-5 w-5 text-emerald-400" />}
+                  </div>
+                </button>
+
+                <div className="max-h-72 space-y-3 overflow-y-auto pr-1">
+                  {guides.length === 0 ? (
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-xs text-slate-500">
+                      Belum ada tour guide yang tersedia untuk saat ini.
+                    </div>
+                  ) : (
+                    guides.map((guide) => {
+                      const isSelected = selectedGuideId === guide.id
+                      const guideName = guide.users?.nama_lengkap || 'Tour Guide MitraWisata'
+                      const initial = guideName.charAt(0).toUpperCase()
+
+                      return (
+                        <button
+                          key={guide.id}
+                          type="button"
+                          onClick={() => setSelectedGuideId(guide.id)}
+                          className={`w-full rounded-2xl border p-4 text-left transition-all ${isSelected ? 'border-emerald-500/60 bg-emerald-500/10 shadow-lg shadow-emerald-500/5' : 'border-slate-800 bg-slate-950/50 hover:border-slate-700 hover:bg-slate-950/80'}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-950 text-base font-black text-emerald-300 shadow-inner">
+                              {initial || <UserRound className="h-5 w-5" />}
+                            </div>
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <div className="text-sm font-bold text-white">{guideName}</div>
+                                  <div className="text-xs font-bold text-emerald-400">Rp {guide.tarif_per_hari.toLocaleString('id-ID')}/hari</div>
+                                </div>
+                                {isSelected && <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-400" />}
+                              </div>
+                              <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">
+                                {guide.keahlian || 'Pemandu lokal berpengalaman siap mendampingi perjalanan Anda.'}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })
+                  )}
                 </div>
               </div>
 

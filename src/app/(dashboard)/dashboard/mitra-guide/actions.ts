@@ -3,13 +3,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function updateGuideProfileAction(state: any, formData: FormData) {
+type GuideProfileActionState = {
+  error?: string
+  success?: string
+} | null
+
+export async function updateGuideProfileAction(state: GuideProfileActionState, formData: FormData) {
+  const nama_lengkap = (formData.get('nama_lengkap') as string | null)?.trim() || ''
   const tarif_per_hari_raw = formData.get('tarif_per_hari') as string
-  const keahlian = formData.get('keahlian') as string
+  const keahlian = ((formData.get('keahlian') as string | null) || '').trim()
   const is_available = formData.get('is_available') === 'true'
 
-  if (!tarif_per_hari_raw || !keahlian) {
-    return { error: 'Tarif harian dan keahlian wajib diisi.' }
+  if (!nama_lengkap || !tarif_per_hari_raw || !keahlian) {
+    return { error: 'Nama lengkap, tarif harian, dan keahlian wajib diisi.' }
   }
 
   const tarif_per_hari = parseInt(tarif_per_hari_raw, 10)
@@ -24,17 +30,26 @@ export async function updateGuideProfileAction(state: any, formData: FormData) {
     return { error: 'Sesi berakhir, silakan login kembali.' }
   }
 
-  const { error } = await supabase
+  const { error: userError } = await supabase
+    .from('users')
+    .update({ nama_lengkap })
+    .eq('id', user.id)
+
+  if (userError) {
+    return { error: 'Gagal memperbarui nama lengkap: ' + userError.message }
+  }
+
+  const { error: guideError } = await supabase
     .from('guides')
-    .update({
+    .upsert({
+      mitra_id: user.id,
       tarif_per_hari,
       keahlian,
       is_available,
-    })
-    .eq('mitra_id', user.id)
+    }, { onConflict: 'mitra_id' })
 
-  if (error) {
-    return { error: 'Gagal memperbarui profil: ' + error.message }
+  if (guideError) {
+    return { error: 'Gagal memperbarui profil: ' + guideError.message }
   }
 
   revalidatePath('/dashboard/mitra-guide')
