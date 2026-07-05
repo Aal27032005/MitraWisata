@@ -131,7 +131,8 @@ export async function updateGuideProfileAction(
   if (hasFotoProfil) {
     const ext = fotoProfilName.split('.').pop()?.toLowerCase() || 'jpg'
     const contentType = fotoProfilBlob!.type || 'image/jpeg'
-    const storagePath = `profiles/${user.id}-${Date.now()}.${ext}`
+    const randomSuffix = Math.random().toString(36).substring(2, 8)
+    const storagePath = `profiles/${user.id}-${Date.now()}-${randomSuffix}.${ext}`
 
     const uploadedUrl = await uploadFileToStorage(fotoProfilBlob!, storagePath, contentType)
     if (!uploadedUrl) {
@@ -140,21 +141,32 @@ export async function updateGuideProfileAction(
     foto_profil_url = uploadedUrl
   }
 
-  // ── 6. Upload galeri baru (jika ada), append ke galeri lama ───────────────
+  // ── 6. Upload galeri baru secara SEKUENSIAL (satu per satu) ──────────────
+  // Sequential dengan for...of mencegah:
+  // (a) Tabrakan nama file — setiap file mendapat timestamp + random suffix unik
+  // (b) Overload koneksi ke Supabase Storage saat upload banyak file sekaligus
   let foto_galeri_urls: string[] = [...existing_galeri_urls]
 
   if (galeriEntries.length > 0) {
-    const uploadPromises = galeriEntries.map(({ blob, name }, index) => {
+    console.log('[Action] Mulai upload galeri sekuensial:', galeriEntries.length, 'file')
+    for (let i = 0; i < galeriEntries.length; i++) {
+      const { blob, name } = galeriEntries[i]
       const ext = name.split('.').pop()?.toLowerCase() || 'jpg'
       const contentType = blob.type || 'image/jpeg'
-      // Tambah index ke timestamp agar path unik saat upload paralel
-      const storagePath = `galleries/${user.id}-${Date.now()}-${index}.${ext}`
-      return uploadFileToStorage(blob, storagePath, contentType)
-    })
-    const uploadedUrls = await Promise.all(uploadPromises)
-    const successUrls = uploadedUrls.filter((url): url is string => url !== null)
-    foto_galeri_urls = [...foto_galeri_urls, ...successUrls]
-    console.log('[Action] Galeri berhasil diupload:', successUrls.length, 'dari', galeriEntries.length)
+      // Timestamp diambil fresh per-iterasi + random suffix 6 karakter
+      // untuk memastikan path benar-benar unik walaupun upload cepat
+      const randomSuffix = Math.random().toString(36).substring(2, 8)
+      const storagePath = `galleries/${user.id}-${Date.now()}-${randomSuffix}.${ext}`
+
+      const uploadedUrl = await uploadFileToStorage(blob, storagePath, contentType)
+      if (uploadedUrl) {
+        foto_galeri_urls.push(uploadedUrl)
+        console.log(`[Action] Galeri [${i + 1}/${galeriEntries.length}] berhasil:`, uploadedUrl)
+      } else {
+        console.warn(`[Action] Galeri [${i + 1}/${galeriEntries.length}] gagal, dilanjutkan ke berikutnya`)
+      }
+    }
+    console.log('[Action] Selesai upload galeri. Total URL tersimpan:', foto_galeri_urls.length)
   }
 
   // ── 7. Update tabel users ──────────────────────────────────────────────────

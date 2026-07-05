@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Award, CalendarCheck, Compass, DollarSign, Images } from 'lucide-react'
+import { Award, CalendarCheck, Compass, DollarSign } from 'lucide-react'
 import { parseGaleriUrls } from '@/app/(dashboard)/dashboard/mitra-guide/utils'
+import GuideGalleryClient from './GuideGalleryClient'
 
 export const revalidate = 0
 
@@ -74,6 +75,7 @@ export default async function GuideDetailPage({ params }: PageProps) {
 
         {/* ── Kolom Kanan: Info Detail ── */}
         <section className="lg:col-span-7 space-y-6">
+
           {/* Spesialisasi */}
           <div className="bg-white/80 border border-slate-200 rounded-2xl p-6 space-y-3 dark:bg-slate-900/40 dark:border-slate-800">
             <h2 className="text-base font-bold text-slate-950 flex items-center gap-2 uppercase tracking-wider dark:text-white">
@@ -103,33 +105,9 @@ export default async function GuideDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Galeri Pengalaman — hanya tampil jika ada foto */}
-          {galeriUrls.length > 0 && (
-            <div className="bg-white/80 border border-slate-200 rounded-2xl p-6 space-y-4 dark:bg-slate-900/40 dark:border-slate-800">
-              <h2 className="text-base font-bold text-slate-950 flex items-center gap-2 uppercase tracking-wider dark:text-white">
-                <Images className="w-5 h-5 text-emerald-400" />
-                Galeri Pengalaman
-              </h2>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {galeriUrls.map((url, idx) => (
-                  <div
-                    key={idx}
-                    className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={url}
-                      alt={`Galeri pengalaman ${idx + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                ))}
-              </div>
-              <p className="text-slate-500 text-[10px] leading-relaxed">
-                Foto dokumentasi perjalanan dan momen bersama wisatawan dari guide ini.
-              </p>
-            </div>
-          )}
+          {/* ── Galeri Interaktif (Client Component) ── */}
+          {/* Data galeriUrls di-fetch di server lalu dipass sebagai prop ke client */}
+          <GuideGalleryClient galeriUrls={galeriUrls} />
 
           <Link
             href="/wisata"
