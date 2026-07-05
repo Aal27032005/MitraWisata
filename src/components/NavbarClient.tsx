@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Compass, LogIn, LogOut, Menu, Moon, Sun, UserRound, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 
 type UserRole = 'admin' | 'customer' | 'mitra_wisata' | 'mitra_guide'
 
@@ -40,9 +40,9 @@ const roleMenus: Record<UserRole, NavItem[]> = {
     { label: 'Riwayat Booking & Pembayaran', href: '/dashboard/customer' },
   ],
   mitra_wisata: [
-    { label: 'Beranda Mitra', href: '/dashboard/mitra-wisata' },
-    { label: 'Kelola Destinasi', href: '/dashboard/mitra-wisata' },
-    { label: 'Riwayat Pesanan Tiket', href: '/dashboard/mitra-wisata' },
+    { label: 'Beranda Mitra', href: '/dashboard/mitra-wisata?tab=beranda' },
+    { label: 'Kelola Destinasi', href: '/dashboard/mitra-wisata?tab=kelola' },
+    { label: 'Riwayat Pesanan Tiket', href: '/dashboard/mitra-wisata?tab=riwayat' },
   ],
   mitra_guide: [
     { label: 'Beranda Guide', href: '/dashboard/mitra-guide?tab=beranda' },
@@ -71,11 +71,15 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof document === 'undefined') return false
-    return document.documentElement.classList.contains('dark')
-  })
+  const [mounted, setMounted] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const [isPending, startTransition] = useTransition()
+
+  // Baca tema dari DOM hanya setelah mount di client — mencegah hydration mismatch
+  useEffect(() => {
+    setIsDarkMode(document.documentElement.classList.contains('dark'))
+    setMounted(true)
+  }, [])
   const role = normalizeRole(profile?.role)
   const navItems = profile ? roleMenus[role] : publicMenu
   const initial = (profile?.nama_lengkap || profile?.email || 'U').charAt(0).toUpperCase()
@@ -110,7 +114,7 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
       const params = new URLSearchParams(hrefQuery)
       const tabParam = params.get('tab')
       const currentTab = searchParams ? searchParams.get('tab') : null
-      // Beranda Guide aktif jika tab=beranda ATAU tidak ada query tab sama sekali
+      // Tab 'beranda' aktif jika tab=beranda ATAU tidak ada query tab sama sekali
       if (tabParam === 'beranda') {
         return !currentTab || currentTab === 'beranda'
       }
@@ -144,15 +148,20 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
           </div>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/70 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              aria-label={isDarkMode ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
-              title={isDarkMode ? 'Mode terang' : 'Mode gelap'}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+            {/* Tombol tema: render placeholder saat belum mounted agar tidak hydration mismatch */}
+            {mounted ? (
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/70 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                aria-label={isDarkMode ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+                title={isDarkMode ? 'Mode terang' : 'Mode gelap'}
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+            ) : (
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/70 dark:border-slate-800 dark:bg-slate-900/70" aria-hidden="true" />
+            )}
             {profile ? (
               <>
                 <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 py-1 pl-1 pr-3 dark:border-slate-800 dark:bg-slate-900/60">
@@ -215,14 +224,18 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300"
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              {isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
-            </button>
+            {mounted ? (
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300"
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
+              </button>
+            ) : (
+              <span className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300" aria-hidden="true">&nbsp;</span>
+            )}
 
             {profile ? (
               <div className="space-y-3 rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/50">

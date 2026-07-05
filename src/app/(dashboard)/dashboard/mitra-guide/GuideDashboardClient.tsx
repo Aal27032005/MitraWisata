@@ -96,9 +96,18 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
   // ── STATE GALERI FOTO ─────────────────────────────────────────────────
   // galeriFiles: array File yang dipilih user untuk preview lokal
   // galeriPreviews: array object URL untuk thumbnail grid
-  // galeriUrls: URL permanen yang sudah tersimpan di DB — dibaca dari savedProfile
+  // activeGaleriUrls: URL galeri tersimpan di DB yang MASIH ingin dipertahankan
+  //   (dikurangi saat user klik hapus — berbeda dari savedProfile yang baru update setelah save)
   const [galeriFiles, setGaleriFiles] = useState<File[]>([])
   const [galeriPreviews, setGaleriPreviews] = useState<string[]>([])
+  const [activeGaleriUrls, setActiveGaleriUrls] = useState<string[]>(
+    guideProfile.foto_galeri_urls ?? []
+  )
+
+  // Sinkronkan activeGaleriUrls ketika savedProfile berubil setelah save berhasil
+  useEffect(() => {
+    setActiveGaleriUrls(savedProfile.foto_galeri_urls)
+  }, [savedProfile.foto_galeri_urls])
 
   const handleStartEdit = () => {
     setState(null)
@@ -115,6 +124,8 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
     // Reset galeri ke state semula (hapus pilihan file baru yang belum disimpan)
     setGaleriFiles([])
     setGaleriPreviews([])
+    // Kembalikan daftar galeri tersimpan ke kondisi sebelum edit
+    setActiveGaleriUrls(savedProfile.foto_galeri_urls)
     setState(null)
     setIsEditing(false)
   }
@@ -149,6 +160,12 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
     setGaleriPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
+  // Hapus satu foto dari galeri yang sudah tersimpan di DB
+  // URL yang dihapus dikirim ke server agar file fisik di Storage juga terhapus
+  const handleRemoveSavedGaleri = (index: number) => {
+    setActiveGaleriUrls((prev) => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!isEditing || isSaving) return
@@ -165,7 +182,13 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
 
     // ── URL lama sebagai fallback (agar tidak terhapus jika tidak ada file baru) ──
     formData.set('existing_foto_profil_url', savedProfile.foto_profil_url ?? '')
-    formData.set('existing_galeri_urls', JSON.stringify(savedProfile.foto_galeri_urls))
+    // Kirim daftar galeri yang MASIH aktif (sudah dikurangi yang dihapus user)
+    formData.set('existing_galeri_urls', JSON.stringify(activeGaleriUrls))
+    // Kirim URL yang dihapus agar server bisa hapus file fisik dari Storage
+    const deletedGaleriUrls = savedProfile.foto_galeri_urls.filter(
+      (url) => !activeGaleriUrls.includes(url)
+    )
+    formData.set('deleted_galeri_urls', JSON.stringify(deletedGaleriUrls))
 
     // ── File foto profil baru (jika ada) ───────────────────────────────────
     if (fotoProfil) {
@@ -284,7 +307,7 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                       <th className="py-3.5 px-5">Tanggal Kunjungan</th>
                       <th className="py-3.5 px-5 text-center">Jumlah Tiket</th>
                       <th className="py-3.5 px-5 text-center">Durasi</th>
-                      <th className="py-3.5 px-5">Total Biaya</th>
+                      <th className="py-3.5 px-5">Tarif Jasa Guide</th>
                       <th className="py-3.5 px-5 text-center">Status</th>
                     </tr>
                   </thead>
@@ -378,12 +401,12 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                     <p className="text-slate-500 text-[11px] mt-2 leading-relaxed">Jumlah wisatawan yang memilih jasa pemandu Anda.</p>
                   </div>
                   <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl dark:bg-slate-950/40 dark:border-slate-800">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">Pendapatan Berhasil</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">Pendapatan Jasa Guide</span>
                     <div className="text-3xl font-black text-emerald-500 mt-2 flex items-baseline gap-0.5">
                       <span className="text-sm font-semibold">Rp</span>
                       {totalRevenue.toLocaleString('id-ID')}
                     </div>
-                    <p className="text-slate-500 text-[11px] mt-2 leading-relaxed">Total akumulasi pembayaran lunas dari transaksi sukses.</p>
+                    <p className="text-slate-500 text-[11px] mt-2 leading-relaxed">Akumulasi tarif jasa pemanduan dari tugas yang sukses.</p>
                   </div>
                 </div>
 
@@ -569,7 +592,36 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                       tabIndex={isEditing ? 0 : -1}
                     />
 
-                    {/* Grid thumbnail pratinjau galeri baru */}
+                    {/* Galeri tersimpan di DB — tampil saat mode view maupun edit */}
+                    {activeGaleriUrls.length > 0 && (
+                      <div className="mb-2">
+                        {isEditing && (
+                          <p className="text-slate-400 text-[10px] mb-1.5">
+                            Foto tersimpan ({activeGaleriUrls.length}) — klik ✕ untuk menghapus:
+                          </p>
+                        )}
+                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                          {activeGaleriUrls.map((src, idx) => (
+                            <div key={src} className="relative group aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={src} alt={`Galeri ${idx + 1}`} className="w-full h-full object-cover" />
+                              {isEditing && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSavedGaleri(idx)}
+                                  className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                  aria-label={`Hapus foto galeri ${idx + 1}`}
+                                >
+                                  <XIcon className="w-3 h-3" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Grid thumbnail pratinjau galeri BARU yang dipilih user */}
                     {galeriPreviews.length > 0 && (
                       <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                         {galeriPreviews.map((src, idx) => (
@@ -595,23 +647,7 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                       </div>
                     )}
 
-                    {/* Tampilkan foto galeri yang sudah tersimpan di DB jika tidak ada file baru */}
-                    {galeriPreviews.length === 0 && savedProfile.foto_galeri_urls.length > 0 && (
-                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                        {savedProfile.foto_galeri_urls.map((src, idx) => (
-                          <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={src}
-                              alt={`Galeri ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {galeriPreviews.length === 0 && savedProfile.foto_galeri_urls.length === 0 && (
+                    {activeGaleriUrls.length === 0 && galeriPreviews.length === 0 && (
                       <p className="text-slate-400 text-[10px] italic text-center py-2">
                         Belum ada foto galeri tersimpan.
                       </p>

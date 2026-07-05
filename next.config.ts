@@ -13,9 +13,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      // Naikkan limit payload Server Action dari default 1 MB → 20 MB
-      // agar upload foto profil dan galeri tidak dipotong oleh server.
-      bodySizeLimit: '20mb',
+      // Naikkan limit payload Server Action → 50 MB
+      // agar multi-upload foto utama + galeri resolusi tinggi tidak terpotong.
+      bodySizeLimit: '50mb',
     },
   },
 };

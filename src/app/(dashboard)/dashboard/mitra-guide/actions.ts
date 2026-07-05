@@ -75,8 +75,11 @@ export async function updateGuideProfileAction(
   const existing_foto_profil_url =
     (formData.get('existing_foto_profil_url') as string | null)?.trim() || null
 
-  // Galeri lama — dikirim client sebagai JSON string
+  // Galeri lama yang masih aktif (sudah dikurangi yang dihapus user)
   const existing_galeri_urls = parseGaleriFromFormData(formData.get('existing_galeri_urls'))
+
+  // URL galeri yang dihapus user — untuk dihapus juga dari Storage
+  const deleted_galeri_urls = parseGaleriFromFormData(formData.get('deleted_galeri_urls'))
 
   // ── 2. Deteksi file baru ───────────────────────────────────────────────────
   // Di Server Actions Next.js, File dari FormData bisa berupa File atau Blob.
@@ -203,6 +206,36 @@ export async function updateGuideProfileAction(
   }
 
   console.log('[Action] Profil berhasil disimpan. foto_profil_url:', foto_profil_url)
+
+  // ── Hapus file fisik galeri yang dihapus user dari Supabase Storage ──────
+  // Ekstrak storage path dari public URL (format: .../storage/v1/object/public/guide-photos/<path>)
+  if (deleted_galeri_urls.length > 0) {
+    const BUCKET = 'guide-photos'
+    const pathsToDelete = deleted_galeri_urls
+      .map((url) => {
+        try {
+          const marker = `/object/public/${BUCKET}/`
+          const idx = url.indexOf(marker)
+          return idx !== -1 ? decodeURIComponent(url.slice(idx + marker.length)) : null
+        } catch {
+          return null
+        }
+      })
+      .filter((p): p is string => p !== null)
+
+    if (pathsToDelete.length > 0) {
+      const { error: deleteError } = await serviceClient.storage
+        .from(BUCKET)
+        .remove(pathsToDelete)
+      if (deleteError) {
+        // Gagal hapus storage tidak membatalkan simpan profil — hanya log saja
+        console.warn('[Action] Gagal hapus file galeri dari Storage:', deleteError.message)
+      } else {
+        console.log('[Action] File galeri dihapus dari Storage:', pathsToDelete)
+      }
+    }
+  }
+
   revalidatePath('/dashboard/mitra-guide')
   return {
     success: 'Profil pemandu wisata berhasil diperbarui!',

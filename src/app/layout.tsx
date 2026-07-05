@@ -40,8 +40,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <head>
+        {/* Script ini dieksekusi sebelum hidrasi React dimulai agar kelas 'dark'
+            sudah terpasang di <html> sejak render pertama — mencegah flash/hydration mismatch. */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="min-h-full flex flex-col">
         <Navbar />
         {children}
       </body>

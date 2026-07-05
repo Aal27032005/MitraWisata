@@ -54,7 +54,9 @@ export default async function MitraGuideDashboardPage({ searchParams }: PageProp
     }
   }
 
-  // Ambil data bookings untuk guide ini (filter by guides.id, bukan mitra_id)
+  // Ambil data bookings untuk guide ini — dengan join guide untuk ambil tarif_per_hari
+  // Guide hanya berhak atas porsi tarif mereka sendiri (total_harga - harga_tiket × jumlah_tiket),
+  // namun cara paling bersih adalah join ke tabel guides untuk ambil tarif_per_hari langsung.
   let bookings: any[] = []
   if (guideProfile?.id) {
     const { data: bookingsData, error: bookingsError } = await supabase
@@ -63,17 +65,22 @@ export default async function MitraGuideDashboardPage({ searchParams }: PageProp
         id,
         tanggal_kunjungan,
         jumlah_tiket,
-        total_harga,
         status,
         created_at,
-        wisata ( nama_wisata ),
-        customer:customer_id ( nama_lengkap, email )
+        wisata:wisata_id ( nama_wisata ),
+        customer:customer_id ( nama_lengkap, email ),
+        guide:guide_id ( tarif_per_hari )
       `)
       .eq('guide_id', guideProfile.id)
       .order('created_at', { ascending: false })
 
     if (!bookingsError && bookingsData) {
-      bookings = bookingsData
+      // Sajikan total_harga sebagai porsi tarif guide saja (bukan total pembelian customer)
+      bookings = (bookingsData as any[]).map((b) => ({
+        ...b,
+        // Tarif guide per booking = tarif_per_hari guide (flat per hari, independen dari jumlah tiket)
+        total_harga: b.guide?.tarif_per_hari ?? 0,
+      }))
     } else if (bookingsError) {
       console.error('Gagal mengambil data booking guide:', bookingsError.message)
     }
