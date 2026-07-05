@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { Compass, LogIn, LogOut, Menu, Moon, Sun, UserRound, X } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 type UserRole = 'admin' | 'customer' | 'mitra_wisata' | 'mitra_guide'
@@ -45,9 +45,9 @@ const roleMenus: Record<UserRole, NavItem[]> = {
     { label: 'Riwayat Pesanan Tiket', href: '/dashboard/mitra-wisata' },
   ],
   mitra_guide: [
-    { label: 'Beranda Guide', href: '/dashboard/mitra-guide' },
-    { label: 'Edit Profil & Tarif', href: '/dashboard/mitra-guide' },
-    { label: 'Jadwal Bookingan', href: '/dashboard/mitra-guide' },
+    { label: 'Beranda Guide', href: '/dashboard/mitra-guide?tab=beranda' },
+    { label: 'Edit Profil & Tarif', href: '/dashboard/mitra-guide?tab=edit-profil' },
+    { label: 'Jadwal Bookingan', href: '/dashboard/mitra-guide?tab=jadwal' },
   ],
 }
 
@@ -69,6 +69,7 @@ function normalizeRole(role?: string): UserRole {
 export default function NavbarClient({ profile }: NavbarClientProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof document === 'undefined') return false
@@ -99,11 +100,24 @@ export default function NavbarClient({ profile }: NavbarClientProps) {
   }
 
   const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/'
+    if (href === '/') return pathname === '/'
+
+    const [hrefPath, hrefQuery] = href.split('?')
+    if (pathname !== hrefPath) return false
+
+    // Jika href punya query string (misal ?tab=beranda), cocokkan tab-nya
+    if (hrefQuery) {
+      const params = new URLSearchParams(hrefQuery)
+      const tabParam = params.get('tab')
+      const currentTab = searchParams ? searchParams.get('tab') : null
+      // Beranda Guide aktif jika tab=beranda ATAU tidak ada query tab sama sekali
+      if (tabParam === 'beranda') {
+        return !currentTab || currentTab === 'beranda'
+      }
+      return currentTab === tabParam
     }
 
-    return pathname === href || pathname.startsWith(`${href}/`)
+    return true
   }
 
   return (
