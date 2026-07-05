@@ -45,8 +45,14 @@ CREATE TABLE IF NOT EXISTS guides (
     tarif_per_hari INT NOT NULL CONSTRAINT chk_tarif_per_hari CHECK (tarif_per_hari >= 0),
     keahlian TEXT NOT NULL,
     is_available BOOLEAN DEFAULT TRUE,
+    foto_profil_url TEXT,
+    foto_galeri_urls TEXT[] DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Migrasi aman untuk database guides yang sudah terlanjur dibuat sebelum fitur foto.
+ALTER TABLE guides ADD COLUMN IF NOT EXISTS foto_profil_url TEXT;
+ALTER TABLE guides ADD COLUMN IF NOT EXISTS foto_galeri_urls TEXT[] DEFAULT '{}';
 
 -- 4. TABEL: bookings (Dibuat oleh 'customer')
 CREATE TABLE IF NOT EXISTS bookings (

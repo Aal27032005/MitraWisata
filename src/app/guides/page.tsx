@@ -15,6 +15,7 @@ type GuideCatalogItem = {
   keahlian: string
   is_available: boolean
   created_at: string
+  foto_profil_url?: string | null
   users?: GuideUser | GuideUser[] | null
 }
 
@@ -22,7 +23,7 @@ export default async function GuidesCatalogPage() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('guides')
-    .select('id, tarif_per_hari, keahlian, is_available, created_at, users(nama_lengkap, email)')
+    .select('id, tarif_per_hari, keahlian, is_available, created_at, foto_profil_url, users(nama_lengkap, email)')
     .order('is_available', { ascending: false })
     .order('created_at', { ascending: false })
   const guides = (data || []) as GuideCatalogItem[]
@@ -51,29 +52,53 @@ export default async function GuidesCatalogPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {guides.map((guide) => {
               const guideUser = Array.isArray(guide.users) ? guide.users[0] : guide.users
+              const initial = guideUser?.nama_lengkap?.charAt(0) || 'G'
 
               return (
-              <Link key={guide.id} href={`/guides/${guide.id}`} className="bg-white/80 border border-slate-200 hover:border-emerald-500/30 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300 group dark:bg-slate-900/40 dark:border-slate-900">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-emerald-600 font-bold text-lg shrink-0 dark:bg-slate-800 dark:border-slate-700 dark:text-emerald-400">
-                      {guideUser?.nama_lengkap?.charAt(0) || 'G'}
+                <Link
+                  key={guide.id}
+                  href={`/guides/${guide.id}`}
+                  className="bg-white/80 border border-slate-200 hover:border-emerald-500/30 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300 group dark:bg-slate-900/40 dark:border-slate-900"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Avatar — tampilkan foto profil jika ada, fallback ke inisial */}
+                      <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-emerald-600 font-bold text-lg shrink-0 overflow-hidden dark:bg-slate-800 dark:border-slate-700 dark:text-emerald-400">
+                        {guide.foto_profil_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={guide.foto_profil_url}
+                            alt={`Foto profil ${guideUser?.nama_lengkap || 'guide'}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          initial
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h2 className="font-bold text-slate-950 truncate group-hover:text-emerald-600 transition-colors dark:text-white dark:group-hover:text-emerald-400">
+                          {guideUser?.nama_lengkap || 'Tour Guide'}
+                        </h2>
+                        <p className="text-slate-500 text-xs truncate">{guideUser?.email}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h2 className="font-bold text-slate-950 truncate group-hover:text-emerald-600 transition-colors dark:text-white dark:group-hover:text-emerald-400">{guideUser?.nama_lengkap || 'Tour Guide'}</h2>
-                      <p className="text-slate-500 text-xs truncate">{guideUser?.email}</p>
-                    </div>
+                    <span className={`px-2 py-1 rounded-full border text-[10px] font-bold uppercase shrink-0 ${guide.is_available ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                      {guide.is_available ? 'Tersedia' : 'Sibuk'}
+                    </span>
                   </div>
-                  <span className={`px-2 py-1 rounded-full border text-[10px] font-bold uppercase ${guide.is_available ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                    {guide.is_available ? 'Tersedia' : 'Sibuk'}
-                  </span>
-                </div>
-                <p className="text-slate-600 text-xs leading-relaxed line-clamp-3 bg-slate-50 border border-slate-200 rounded-xl p-3 dark:text-slate-400 dark:bg-slate-950/40 dark:border-slate-900">{guide.keahlian}</p>
-                <div className="flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-850">
-                  <span className="text-emerald-400 text-sm font-bold flex items-center gap-1"><DollarSign className="w-4 h-4" />Rp {guide.tarif_per_hari.toLocaleString('id-ID')}/hari</span>
-                  <span className="text-slate-700 text-xs font-bold flex items-center gap-1 dark:text-slate-300">Detail <ArrowRight className="w-3.5 h-3.5" /></span>
-                </div>
-              </Link>
+                  <p className="text-slate-600 text-xs leading-relaxed line-clamp-3 bg-slate-50 border border-slate-200 rounded-xl p-3 dark:text-slate-400 dark:bg-slate-950/40 dark:border-slate-900">
+                    {guide.keahlian}
+                  </p>
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-800">
+                    <span className="text-emerald-400 text-sm font-bold flex items-center gap-1">
+                      <DollarSign className="w-4 h-4" />
+                      Rp {guide.tarif_per_hari.toLocaleString('id-ID')}/hari
+                    </span>
+                    <span className="text-slate-700 text-xs font-bold flex items-center gap-1 dark:text-slate-300">
+                      Detail <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </Link>
               )
             })}
           </div>

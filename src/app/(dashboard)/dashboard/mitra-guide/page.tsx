@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import GuideDashboardClient from './GuideDashboardClient'
+import { parseGaleriUrls } from './utils'
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>
@@ -80,12 +81,19 @@ export default async function MitraGuideDashboardPage({ searchParams }: PageProp
 
   return (
     <GuideDashboardClient
-      guideProfile={guideProfile ?? {
+      guideProfile={guideProfile ? {
+        ...guideProfile,
+        // foto_galeri_urls disimpan di DB sebagai TEXT (JSON string),
+        // parse ke string[] sebelum dikirim ke client component.
+        foto_galeri_urls: parseGaleriUrls(guideProfile.foto_galeri_urls),
+      } : {
         id: '',
         mitra_id: user.id,
         tarif_per_hari: 0,
         keahlian: '-',
         is_available: true,
+        foto_profil_url: null,
+        foto_galeri_urls: [],
       }}
       userData={userData}
       bookings={bookings}

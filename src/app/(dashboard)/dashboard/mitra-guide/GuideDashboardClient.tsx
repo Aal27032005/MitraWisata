@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useTransition, useEffect } from 'react'
 import { updateGuideProfileAction, toggleGuideAvailabilityAction } from './actions'
-import { Compass, Award, DollarSign, Check, AlertCircle, RefreshCw, Eye, Sparkles, UserRound, Calendar, Users, CalendarCheck } from 'lucide-react'
+import { Compass, Award, DollarSign, Check, AlertCircle, RefreshCw, Eye, Sparkles, UserRound, Calendar, Users, CalendarCheck, Camera, ImageIcon, X as XIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface GuideProfile {
@@ -11,6 +11,8 @@ interface GuideProfile {
   tarif_per_hari: number
   keahlian: string
   is_available: boolean
+  foto_profil_url?: string | null
+  foto_galeri_urls?: string[] | null
 }
 
 interface UserData {
@@ -39,12 +41,16 @@ interface Props {
 type ActionState = {
   error?: string
   success?: string
+  foto_profil_url?: string | null
+  foto_galeri_urls?: string[]
 } | null
 
 type SavedProfile = {
   nama_lengkap: string
   tarif_per_hari: number
   keahlian: string
+  foto_profil_url: string | null
+  foto_galeri_urls: string[]
 }
 
 export default function GuideDashboardClient({ guideProfile, userData, bookings, activeTab: activeTabProp }: Props) {
@@ -54,6 +60,8 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
     nama_lengkap: userData.nama_lengkap,
     tarif_per_hari: guideProfile.tarif_per_hari,
     keahlian: guideProfile.keahlian,
+    foto_profil_url: guideProfile.foto_profil_url ?? null,
+    foto_galeri_urls: guideProfile.foto_galeri_urls ?? [],
   }
 
   // ── TAB STATE ─────────────────────────────────────────────────────────
@@ -76,6 +84,22 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
   const [state, setState] = useState<ActionState>(null)
   const [isPendingToggle, startToggleTransition] = useTransition()
 
+  // ── STATE FOTO PROFIL ─────────────────────────────────────────────────
+  // fotoProfil: objek File yang dipilih user (belum di-upload, untuk preview lokal)
+  // fotoProfilPreview: object URL untuk preview di UI
+  // fotoProfilUrl: URL permanen yang sudah tersimpan di DB (dari guideProfile)
+  const [fotoProfil, setFotoProfil] = useState<File | null>(null)
+  const [fotoProfilPreview, setFotoProfilPreview] = useState<string | null>(
+    guideProfile.foto_profil_url ?? null
+  )
+
+  // ── STATE GALERI FOTO ─────────────────────────────────────────────────
+  // galeriFiles: array File yang dipilih user untuk preview lokal
+  // galeriPreviews: array object URL untuk thumbnail grid
+  // galeriUrls: URL permanen yang sudah tersimpan di DB — dibaca dari savedProfile
+  const [galeriFiles, setGaleriFiles] = useState<File[]>([])
+  const [galeriPreviews, setGaleriPreviews] = useState<string[]>([])
+
   const handleStartEdit = () => {
     setState(null)
     setIsEditing(true)
@@ -85,8 +109,44 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
     setNamaLengkap(savedProfile.nama_lengkap)
     setTarif(savedProfile.tarif_per_hari)
     setKeahlian(savedProfile.keahlian)
+    // Reset preview foto profil ke URL tersimpan (atau null jika belum ada)
+    setFotoProfil(null)
+    setFotoProfilPreview(savedProfile.foto_profil_url)
+    // Reset galeri ke state semula (hapus pilihan file baru yang belum disimpan)
+    setGaleriFiles([])
+    setGaleriPreviews([])
     setState(null)
     setIsEditing(false)
+  }
+
+  // Handler saat user memilih foto profil baru
+  const handleFotoProfilChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    // Revoke object URL sebelumnya agar tidak memory leak
+    if (fotoProfilPreview && fotoProfilPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(fotoProfilPreview)
+    }
+    setFotoProfil(file)
+    setFotoProfilPreview(URL.createObjectURL(file))
+  }
+
+  // Handler saat user memilih file-file galeri baru
+  const handleGaleriChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    // Revoke object URL lama
+    galeriPreviews.forEach((url) => URL.revokeObjectURL(url))
+    const previews = files.map((f) => URL.createObjectURL(f))
+    setGaleriFiles(files)
+    setGaleriPreviews(previews)
+  }
+
+  // Hapus satu item dari pratinjau galeri baru
+  const handleRemoveGaleriPreview = (index: number) => {
+    URL.revokeObjectURL(galeriPreviews[index])
+    setGaleriFiles((prev) => prev.filter((_, i) => i !== index))
+    setGaleriPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -96,16 +156,59 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
     setState(null)
 
     const formData = new FormData()
+
+    // ── Field teks ─────────────────────────────────────────────────────────
     formData.set('nama_lengkap', namaLengkap)
     formData.set('tarif_per_hari', String(tarif))
     formData.set('keahlian', keahlian)
     formData.set('is_available', isAvailable ? 'true' : 'false')
 
+    // ── URL lama sebagai fallback (agar tidak terhapus jika tidak ada file baru) ──
+    formData.set('existing_foto_profil_url', savedProfile.foto_profil_url ?? '')
+    formData.set('existing_galeri_urls', JSON.stringify(savedProfile.foto_galeri_urls))
+
+    // ── File foto profil baru (jika ada) ───────────────────────────────────
+    if (fotoProfil) {
+      formData.set('foto_profil_file', fotoProfil)
+    }
+
+    // ── File-file galeri baru (jika ada) — dikirim satu per satu ──────────
+    galeriFiles.forEach((file, index) => {
+      formData.set(`galeri_file_${index}`, file)
+    })
+
     try {
       const res = await updateGuideProfileAction(null, formData)
       setState(res)
       if (res?.success) {
-        setSavedProfile({ nama_lengkap: namaLengkap, tarif_per_hari: tarif, keahlian })
+        // Gunakan URL yang dikembalikan server (hasil upload) untuk update state lokal
+        const newFotoProfilUrl = res.foto_profil_url ?? savedProfile.foto_profil_url
+        const newGaleriUrls = res.foto_galeri_urls ?? savedProfile.foto_galeri_urls
+
+        setSavedProfile({
+          nama_lengkap: namaLengkap,
+          tarif_per_hari: tarif,
+          keahlian,
+          foto_profil_url: newFotoProfilUrl,
+          foto_galeri_urls: newGaleriUrls,
+        })
+
+        // Update preview foto profil ke URL permanen dari Storage
+        if (newFotoProfilUrl && newFotoProfilUrl !== fotoProfilPreview) {
+          // Revoke blob URL lama agar tidak memory leak
+          if (fotoProfilPreview?.startsWith('blob:')) {
+            URL.revokeObjectURL(fotoProfilPreview)
+          }
+          setFotoProfilPreview(newFotoProfilUrl)
+        }
+
+        // Bersihkan state file sementara
+        setFotoProfil(null)
+        galeriPreviews.forEach((url) => {
+          if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+        })
+        setGaleriFiles([])
+        setGaleriPreviews([])
         setIsEditing(false)
         router.refresh()
       }
@@ -342,6 +445,56 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                       <span>{state.success}</span>
                     </div>
                   )}
+
+                  {/* ── FOTO PROFIL ── */}
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Foto Profil</label>
+                    <div className="flex items-center gap-4">
+                      {/* Avatar preview — mencerminkan perubahan secara real-time */}
+                      <div className="w-16 h-16 rounded-full border-2 border-slate-200 dark:border-slate-700 overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-inner">
+                        {fotoProfilPreview ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={fotoProfilPreview}
+                            alt="Preview foto profil"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-emerald-600 dark:text-emerald-400 text-xl font-bold select-none">
+                            {namaLengkap.charAt(0) || 'G'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <label
+                          htmlFor="foto_profil_input"
+                          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-semibold transition-colors w-full
+                            ${isEditing
+                              ? 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer dark:border-slate-700 dark:bg-slate-950 dark:hover:bg-slate-900 dark:text-slate-300'
+                              : 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/50 opacity-60'
+                            }`}
+                        >
+                          <Camera className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500" />
+                          <span className="truncate">
+                            {fotoProfil ? fotoProfil.name : 'Pilih foto profil baru…'}
+                          </span>
+                        </label>
+                        <input
+                          id="foto_profil_input"
+                          type="file"
+                          accept="image/*"
+                          disabled={!isEditing}
+                          onChange={handleFotoProfilChange}
+                          className="sr-only"
+                          tabIndex={isEditing ? 0 : -1}
+                        />
+                        <p className="text-slate-400 text-[10px] mt-1.5 leading-relaxed">
+                          Format: JPG, PNG, WebP. Preview langsung ditampilkan di sini dan kartu pratinjau kanan.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <label htmlFor="nama_lengkap" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nama Lengkap</label>
                     <div className="relative">
@@ -376,6 +529,95 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                       className={`w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2.5 px-3.5 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none transition-all duration-200 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 ${!isEditing ? 'cursor-default opacity-80' : ''}`}
                     />
                   </div>
+
+                  {/* ── GALERI PENGALAMAN & TESTIMONI ── */}
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <ImageIcon className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                        Galeri Pengalaman &amp; Testimoni
+                      </span>
+                    </div>
+                    <p className="text-slate-500 text-[10px] mb-3 leading-relaxed">
+                      Unggah beberapa foto dokumentasi tur atau momen bersama wisatawan. Mendukung pilihan banyak gambar sekaligus.
+                    </p>
+
+                    {/* Input file galeri */}
+                    <label
+                      htmlFor="galeri_input"
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-semibold transition-colors w-full mb-3
+                        ${isEditing
+                          ? 'border-dashed border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-600 cursor-pointer dark:text-emerald-400 dark:border-emerald-500/30'
+                          : 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/50 opacity-60'
+                        }`}
+                    >
+                      <ImageIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>
+                        {galeriFiles.length > 0
+                          ? `${galeriFiles.length} foto dipilih`
+                          : 'Pilih beberapa foto sekaligus…'}
+                      </span>
+                    </label>
+                    <input
+                      id="galeri_input"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      disabled={!isEditing}
+                      onChange={handleGaleriChange}
+                      className="sr-only"
+                      tabIndex={isEditing ? 0 : -1}
+                    />
+
+                    {/* Grid thumbnail pratinjau galeri baru */}
+                    {galeriPreviews.length > 0 && (
+                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                        {galeriPreviews.map((src, idx) => (
+                          <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={src}
+                              alt={`Galeri ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            {isEditing && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveGaleriPreview(idx)}
+                                className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                                aria-label={`Hapus foto ${idx + 1}`}
+                              >
+                                <XIcon className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Tampilkan foto galeri yang sudah tersimpan di DB jika tidak ada file baru */}
+                    {galeriPreviews.length === 0 && savedProfile.foto_galeri_urls.length > 0 && (
+                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                        {savedProfile.foto_galeri_urls.map((src, idx) => (
+                          <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={src}
+                              alt={`Galeri ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {galeriPreviews.length === 0 && savedProfile.foto_galeri_urls.length === 0 && (
+                      <p className="text-slate-400 text-[10px] italic text-center py-2">
+                        Belum ada foto galeri tersimpan.
+                      </p>
+                    )}
+                  </div>
+
                   <div className="pt-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-800">
                     {!isEditing ? (
                       <button type="button" onClick={handleStartEdit}
@@ -415,8 +657,17 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
 
               <div className="p-6 pb-4 flex items-start justify-between">
                 <div className="flex gap-4">
-                  <div className="w-14 h-14 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-emerald-600 text-xl font-bold flex-shrink-0 shadow-inner dark:bg-slate-800 dark:border-slate-700 dark:text-emerald-400">
-                    {namaLengkap.charAt(0) || 'G'}
+                  <div className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center text-emerald-600 text-xl font-bold flex-shrink-0 shadow-inner dark:border-slate-700 dark:text-emerald-400 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    {fotoProfilPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={fotoProfilPreview}
+                        alt={`Foto profil ${namaLengkap}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      namaLengkap.charAt(0) || 'G'
+                    )}
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-lg font-bold text-slate-950 truncate flex items-center gap-1.5 dark:text-white">
