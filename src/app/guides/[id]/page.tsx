@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Award, CalendarCheck, Compass, DollarSign } from 'lucide-react'
+import { Award, CalendarCheck, ChevronLeft, Compass, DollarSign } from 'lucide-react'
 import { parseGaleriUrls } from '@/app/(dashboard)/dashboard/mitra-guide/utils'
 import GuideGalleryClient from './GuideGalleryClient'
 
@@ -45,6 +45,17 @@ export default async function GuideDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20 dark:bg-slate-950 dark:text-slate-100">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        {/* ── Tombol Kembali ── */}
+        <div className="lg:col-span-12">
+          <Link
+            href="/guides"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Kembali ke Katalog Guide
+          </Link>
+        </div>
 
         {/* ── Kolom Kiri: Kartu Profil ── */}
         <section className="lg:col-span-5 bg-white/80 border border-slate-200 rounded-3xl p-8 h-fit space-y-6 dark:bg-slate-900/50 dark:border-slate-800">

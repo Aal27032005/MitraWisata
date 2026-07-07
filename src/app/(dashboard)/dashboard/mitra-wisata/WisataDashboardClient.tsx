@@ -5,8 +5,10 @@ import { createWisataAction, updateWisataAction, deleteWisataAction } from './ac
 import {
   Landmark, Plus, Edit2, Trash2, X, Compass, DollarSign, Users,
   AlertCircle, BarChart3, Ticket, TrendingUp, Calendar, CalendarCheck, Camera, ImageIcon,
+  ChevronLeft,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { BookingRow } from './page'
 
 interface Wisata {
@@ -181,6 +183,17 @@ export default function WisataDashboardClient({ wisataList, bookings, activeTab:
 
   return (
     <div className="space-y-6">
+      {/* ── Tombol Kembali — hanya muncul saat berada di tab non-beranda ── */}
+      {activeTab !== 'beranda' && (
+        <Link
+          href="/dashboard/mitra-wisata"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Kembali ke Beranda
+        </Link>
+      )}
+
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

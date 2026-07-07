@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ArrowRight, Compass, DollarSign, ShieldCheck } from 'lucide-react'
+import { ArrowRight, ChevronLeft, Compass, DollarSign, ShieldCheck } from 'lucide-react'
 
 export const revalidate = 0
 
@@ -32,6 +32,13 @@ export default async function GuidesCatalogPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20 dark:bg-slate-950 dark:text-slate-100">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
         <section className="space-y-3">
+          <Link
+            href="/wisata"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Kembali ke Jelajah Wisata
+          </Link>
           <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5" />
             Guide Terverifikasi

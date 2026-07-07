@@ -2,8 +2,9 @@
 
 import { FormEvent, useState, useTransition, useEffect } from 'react'
 import { updateGuideProfileAction, toggleGuideAvailabilityAction } from './actions'
-import { Compass, Award, DollarSign, Check, AlertCircle, RefreshCw, Eye, Sparkles, UserRound, Calendar, Users, CalendarCheck, Camera, ImageIcon, X as XIcon } from 'lucide-react'
+import { Compass, Award, DollarSign, Check, AlertCircle, RefreshCw, Eye, Sparkles, UserRound, Calendar, Users, CalendarCheck, Camera, ImageIcon, X as XIcon, ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface GuideProfile {
   id: string
@@ -260,6 +261,17 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
 
   return (
     <div className="space-y-6">
+      {/* ── Tombol Kembali — hanya muncul saat berada di tab non-beranda ── */}
+      {activeTab !== 'beranda' && (
+        <Link
+          href="/dashboard/mitra-guide"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Kembali ke Beranda
+        </Link>
+      )}
+
       {/* ── Header — judul berubah sesuai tab aktif ── */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-950 flex items-center gap-2 dark:text-white">

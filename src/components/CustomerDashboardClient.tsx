@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowRight, CheckCircle, Ticket } from 'lucide-react'
+import { ArrowRight, CalendarCheck, Ticket, Users, UserRound, Wallet, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import ETicketModal, { type ETicketData } from './ETicketModal'
 
@@ -20,6 +20,35 @@ export interface CustomerBookingClient {
 
 interface Props {
   bookings: CustomerBookingClient[]
+}
+
+function getStatusInfo(status: string, tanggalKunjungan: string) {
+  const isSuccess = status === 'success'
+  const isPast = new Date(tanggalKunjungan) < new Date()
+
+  if (isSuccess) {
+    const label = isPast ? 'Selesai' : 'Lunas'
+    return {
+      label,
+      badgeClass:
+        'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+      dotClass: 'bg-emerald-500',
+    }
+  }
+  if (status === 'cancelled') {
+    return {
+      label: 'Dibatalkan',
+      badgeClass:
+        'bg-red-50 text-red-600 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20',
+      dotClass: 'bg-red-500',
+    }
+  }
+  return {
+    label: 'Menunggu',
+    badgeClass:
+      'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/20',
+    dotClass: 'bg-yellow-400',
+  }
 }
 
 export default function CustomerDashboardClient({ bookings }: Props) {
@@ -43,90 +72,123 @@ export default function CustomerDashboardClient({ bookings }: Props) {
 
   return (
     <>
-      <div className="bg-white/80 border border-slate-200 rounded-2xl overflow-hidden shadow-xl dark:bg-slate-900/30 dark:border-slate-800/80">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
-                <th className="py-3.5 px-5">Nama Tempat Wisata</th>
-                <th className="py-3.5 px-5">Tanggal Kunjungan</th>
-                <th className="py-3.5 px-5 text-center">Jumlah Tiket</th>
-                <th className="py-3.5 px-5">Tour Guide</th>
-                <th className="py-3.5 px-5">Total Harga</th>
-                <th className="py-3.5 px-5 text-center">Status</th>
-                <th className="py-3.5 px-5 text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-850">
-              {bookings.map((booking) => {
-                const isPast = new Date(booking.tanggal_kunjungan) < new Date()
-                const isSuccess = booking.status === 'success'
-                let statusLabel = booking.status
-                let statusClass = 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                if (isSuccess) {
-                  statusLabel = isPast ? 'selesai' : 'lunas'
-                  statusClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                } else if (booking.status === 'cancelled') {
-                  statusLabel = 'dibatalkan'
-                  statusClass = 'bg-red-500/10 text-red-400 border-red-500/20'
-                }
+      <div className="flex flex-col gap-3">
+        {bookings.map((booking) => {
+          const { label, badgeClass, dotClass } = getStatusInfo(
+            booking.status,
+            booking.tanggal_kunjungan
+          )
+          const tanggal = new Date(booking.tanggal_kunjungan).toLocaleDateString('id-ID', {
+            day: 'numeric', month: 'short', year: 'numeric',
+          })
 
-                return (
-                  <tr key={booking.id} className="hover:bg-slate-50 text-slate-700 transition-colors dark:hover:bg-slate-900/20 dark:text-slate-300">
-                    <td className="py-4 px-5 font-bold text-slate-950 dark:text-white">
-                      {booking.namaWisata}
-                    </td>
-                    <td className="py-4 px-5">
-                      {new Date(booking.tanggal_kunjungan).toLocaleDateString('id-ID', { dateStyle: 'medium' })}
-                    </td>
-                    <td className="py-4 px-5 text-center font-semibold">{booking.jumlah_tiket} pax</td>
-                    <td className="py-4 px-5 text-xs text-slate-500 italic dark:text-slate-400">
-                      {booking.namaGuide ? (
-                        <span className="text-slate-700 not-italic font-medium dark:text-slate-300">
-                          {booking.namaGuide}
-                        </span>
-                      ) : (
-                        'Tanpa Guide'
+          return (
+            <div
+              key={booking.id}
+              className="group flex flex-col md:flex-row md:items-center md:justify-between gap-4 rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm transition-all hover:shadow-md hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900/60 dark:hover:border-slate-700"
+            >
+              {/* ── Kiri: thumbnail + info utama ──────────────────────── */}
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                {/* Thumbnail foto destinasi */}
+                <div className="w-14 h-14 flex-shrink-0 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+                  {booking.fotoWisataUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={booking.fotoWisataUrl}
+                      alt={booking.namaWisata}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-slate-400" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Nama & meta info */}
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-base text-slate-950 dark:text-white truncate capitalize leading-tight">
+                    {booking.namaWisata}
+                  </h3>
+                  {/* Baris meta: tanggal • pax */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                    <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                      <CalendarCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                      {tanggal}
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-700 select-none">•</span>
+                    <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                      <Users className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                      {booking.jumlah_tiket} Pax
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-700 select-none">•</span>
+                    <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                      <UserRound className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                      {booking.namaGuide ?? (
+                        <span className="italic">Tanpa Guide</span>
                       )}
-                    </td>
-                    <td className="py-4 px-5 font-bold text-emerald-400">
-                      Rp {booking.total_harga.toLocaleString('id-ID')}
-                    </td>
-                    <td className="py-4 px-5 text-center">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusClass}`}>
-                        {statusLabel}
-                      </span>
-                    </td>
-                    <td className="py-4 px-5 text-center">
-                      {booking.status === 'pending' && (
-                        <Link
-                          href={`/checkout/qris/${booking.id}`}
-                          className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <ArrowRight className="w-3.5 h-3.5" />
-                          <span>Bayar</span>
-                        </Link>
-                      )}
-                      {booking.status === 'success' && (
-                        <button
-                          type="button"
-                          onClick={() => openTicket(booking)}
-                          className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Ticket className="w-3.5 h-3.5" />
-                          <span>E-Ticket</span>
-                        </button>
-                      )}
-                      {booking.status === 'cancelled' && (
-                        <span className="text-slate-600 text-xs">Dibatalkan</span>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Kanan: harga + status + aksi ──────────────────────── */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:flex-shrink-0">
+                {/* Harga */}
+                <div className="flex sm:flex-col sm:items-end items-center gap-2 sm:gap-0.5">
+                  <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:hidden">
+                    <Wallet className="w-3 h-3" />
+                    Total:
+                  </div>
+                  <span className="font-black text-base text-emerald-600 dark:text-emerald-400 tabular-nums">
+                    Rp {booking.total_harga.toLocaleString('id-ID')}
+                  </span>
+                  <span className="hidden sm:block text-[10px] text-slate-400">total bayar</span>
+                </div>
+
+                {/* Divider vertikal (desktop) */}
+                <div className="hidden sm:block w-px h-10 bg-slate-200 dark:bg-slate-700" />
+
+                {/* Badge status + tombol aksi */}
+                <div className="flex flex-col items-stretch sm:items-end gap-2 sm:min-w-[120px]">
+                  {/* Badge */}
+                  <span
+                    className={`inline-flex items-center gap-1.5 self-start sm:self-end px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badgeClass}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotClass}`} />
+                    {label}
+                  </span>
+
+                  {/* Tombol aksi */}
+                  {booking.status === 'pending' && (
+                    <Link
+                      href={`/checkout/qris/${booking.id}`}
+                      className="w-full md:w-auto inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl transition-colors"
+                    >
+                      <ArrowRight className="w-3.5 h-3.5" />
+                      <span>Bayar Sekarang</span>
+                    </Link>
+                  )}
+                  {booking.status === 'success' && (
+                    <button
+                      type="button"
+                      onClick={() => openTicket(booking)}
+                      className="w-full md:w-auto inline-flex items-center justify-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    >
+                      <Ticket className="w-3.5 h-3.5" />
+                      <span>Lihat E-Ticket</span>
+                    </button>
+                  )}
+                  {booking.status === 'cancelled' && (
+                    <span className="text-[11px] text-slate-400 text-center sm:text-right">
+                      Pesanan dibatalkan
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Modal E-Ticket */}

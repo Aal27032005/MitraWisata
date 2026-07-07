@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import GuideDashboardClient from './GuideDashboardClient'
 import { parseGaleriUrls } from './utils'
+import { getSubscriptionAction } from '@/app/subscription/actions'
+import SubscriptionGate from '@/components/SubscriptionGate'
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>
@@ -14,6 +16,21 @@ export default async function MitraGuideDashboardPage({ searchParams }: PageProp
 
   if (!user) {
     redirect('/login')
+  }
+
+  // ── Validasi Subscription ────────────────────────────────────────────
+  // Jika subscription tidak active, tampilkan SubscriptionGate (gerbang berbayar).
+  // Ini TIDAK mengubah atau merusak logika di bawah sama sekali.
+  const subscription = await getSubscriptionAction()
+  const isActive = subscription?.status === 'active'
+  if (!isActive) {
+    return (
+      <SubscriptionGate
+        status={subscription?.status === 'expired' ? 'expired' : 'inactive'}
+        roleLabel="Mitra Tour Guide"
+        expiredAt={subscription?.expires_at ?? null}
+      />
+    )
   }
 
   // Ambil data profile dasar user

@@ -73,3 +73,31 @@ CREATE INDEX IF NOT EXISTS idx_guides_mitra ON guides(mitra_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_customer ON bookings(customer_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_wisata ON bookings(wisata_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_guide ON bookings(guide_id);
+
+-- 5. TABEL: subscriptions (SaaS subscription untuk mitra_wisata dan mitra_guide)
+-- Setiap mitra memiliki tepat satu baris di tabel ini.
+-- status: 'inactive' (default/belum bayar), 'active' (berlangganan aktif), 'expired' (kadaluwarsa)
+-- plan: 'bulanan' (30 hari, Rp 50.000), 'tahunan' (365 hari, Rp 450.000), atau NULL jika belum pilih
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    subscription_status TEXT NOT NULL DEFAULT 'inactive'
+        CONSTRAINT chk_subscription_status CHECK (subscription_status IN ('inactive', 'active', 'expired')),
+    subscription_plan TEXT
+        CONSTRAINT chk_subscription_plan CHECK (subscription_plan IN ('bulanan', 'tahunan') OR subscription_plan IS NULL),
+    subscription_expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indeks untuk query cepat berdasarkan user_id
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);
+
+-- Migrasi aman: pastikan semua mitra yang sudah ada mendapat baris subscription 'inactive'
+-- Jalankan ini setelah CREATE TABLE di atas.
+INSERT INTO subscriptions (user_id, subscription_status)
+SELECT id, 'inactive'
+FROM users
+WHERE role IN ('mitra_wisata', 'mitra_guide')
+  AND id NOT IN (SELECT user_id FROM subscriptions)
+ON CONFLICT (user_id) DO NOTHING;

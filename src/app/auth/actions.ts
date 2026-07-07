@@ -45,7 +45,8 @@ export async function loginAction(state: any, formData: FormData) {
   } else if (role === 'mitra_guide') {
     redirect('/dashboard/mitra-guide')
   } else {
-    redirect('/dashboard/customer')
+    // Customer langsung ke halaman Jelajah Wisata setelah login
+    redirect('/wisata')
   }
 }
 
@@ -116,6 +117,19 @@ export async function registerAction(state: any, formData: FormData) {
     
     if (guideError) {
       return { error: 'Gagal inisialisasi profil guide: ' + guideError.message }
+    }
+  }
+
+  // Buat baris subscription 'inactive' untuk mitra baru (mitra_wisata & mitra_guide)
+  // Subscription harus diaktifkan lewat pembayaran sebelum bisa masuk dashboard.
+  if (role === 'mitra_wisata' || role === 'mitra_guide') {
+    const { error: subError } = await supabase
+      .from('subscriptions')
+      .insert([{ user_id: user.id, role, status: 'inactive' }])
+
+    if (subError) {
+      // Non-fatal: mitra tetap bisa login, SubscriptionGate akan handle ini
+      console.warn('[registerAction] Gagal buat baris subscription:', subError.message)
     }
   }
 

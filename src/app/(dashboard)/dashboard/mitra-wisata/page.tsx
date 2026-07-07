@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import WisataDashboardClient from './WisataDashboardClient'
+import { getSubscriptionAction } from '@/app/subscription/actions'
+import SubscriptionGate from '@/components/SubscriptionGate'
+import { redirect } from 'next/navigation'
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>
@@ -38,6 +41,25 @@ export default async function MitraWisataDashboardPage({ searchParams }: PagePro
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  // ── Guard: pastikan user sudah login ──────────────────────────────────
+  if (!user) {
+    redirect('/login')
+  }
+
+  // ── Validasi Subscription ────────────────────────────────────────────
+  // Jika subscription tidak active, tampilkan SubscriptionGate sebelum dashboard.
+  const subscription = await getSubscriptionAction()
+  const isActive = subscription?.status === 'active'
+  if (!isActive) {
+    return (
+      <SubscriptionGate
+        status={subscription?.status === 'expired' ? 'expired' : 'inactive'}
+        roleLabel="Mitra Wisata"
+        expiredAt={subscription?.expires_at ?? null}
+      />
+    )
+  }
 
   let wisataList: {
     id: string

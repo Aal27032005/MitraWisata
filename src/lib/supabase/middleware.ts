@@ -93,7 +93,7 @@ export async function updateSession(request: NextRequest) {
       if (role === 'admin') url.pathname = '/dashboard/admin'
       else if (role === 'mitra_wisata') url.pathname = '/dashboard/mitra-wisata'
       else if (role === 'mitra_guide') url.pathname = '/dashboard/mitra-guide'
-      else if (role === 'customer') url.pathname = '/dashboard/customer'
+      else if (role === 'customer') url.pathname = '/wisata'
       return NextResponse.redirect(url)
     }
   }

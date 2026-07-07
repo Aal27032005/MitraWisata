@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Calendar, Compass, ShoppingBag, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { Calendar, Compass, ShoppingBag, ArrowRight, CheckCircle2, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import CustomerDashboardClient, { type CustomerBookingClient } from '@/components/CustomerDashboardClient'
@@ -140,6 +140,15 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
           </Link>
         </div>
       )}
+
+      {/* TOMBOL KEMBALI */}
+      <Link
+        href="/wisata"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white transition-colors"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Kembali ke Jelajah Wisata
+      </Link>
 
       {/* DASHBOARD HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
