@@ -24,3 +24,45 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Print styles: hanya #printable-ticket-card yang dicetak ────────────── */
+@media print {
+  /* 1. Sembunyikan SEMUA elemen via visibility (bukan display) agar
+        stacking context fixed/absolute tetap dihormati oleh browser */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 2. Tampilkan hanya kartu tiket dan seluruh turunannya */
+  #printable-ticket-card,
+  #printable-ticket-card * {
+    visibility: visible !important;
+  }
+
+  /* 3. Keluarkan kartu tiket dari flow modal — posisikan di pojok kiri atas
+        agar browser print engine merendernya sebagai satu halaman penuh */
+  #printable-ticket-card {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    z-index: 9999 !important;
+    background: #ffffff !important;
+  }
+
+  /* 4. Pastikan warna background ikut tercetak (untuk header hijau, badge, dsb.) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 5. Margin halaman cetak */
+  @page {
+    margin: 10mm;
+    size: A4 portrait;
+  }
+}

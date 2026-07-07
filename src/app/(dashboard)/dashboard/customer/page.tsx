@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { Calendar, Compass, ShoppingBag, ArrowRight, CheckCircle } from 'lucide-react'
+import { Calendar, Compass, ShoppingBag, ArrowRight, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import CustomerDashboardClient, { type CustomerBookingClient } from '@/components/CustomerDashboardClient'
 
 interface PageProps {
   searchParams: Promise<{ success_booking?: string }>
@@ -13,10 +14,12 @@ interface CustomerBooking {
   jumlah_tiket: number
   total_harga: number
   status: string
-  created_at?: string
+  created_at: string
   wisata: {
     nama_wisata: string
     harga_tiket: number
+    foto_url: string | null
+    foto_urls: unknown
   } | null
   guides: {
     tarif_per_hari: number
@@ -37,6 +40,14 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
     redirect('/login')
   }
 
+  // Ambil nama customer untuk ditampilkan di E-Ticket
+  const { data: userData } = await supabase
+    .from('users')
+    .select('nama_lengkap')
+    .eq('id', user.id)
+    .single()
+  const namaCustomer = userData?.nama_lengkap || user.email || 'Wisatawan'
+
   // 1. Ambil data semua booking milik customer ini
   let bookings: CustomerBooking[] = []
   try {
@@ -49,7 +60,7 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
         total_harga,
         status,
         created_at,
-        wisata ( nama_wisata, harga_tiket ),
+        wisata ( nama_wisata, harga_tiket, foto_url, foto_urls ),
         guides ( tarif_per_hari, users ( nama_lengkap ) )
       `)
       .eq('customer_id', user.id)
@@ -72,7 +83,9 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
         tanggal_kunjungan,
         jumlah_tiket,
         total_harga,
-        wisata ( nama_wisata, harga_tiket ),
+        status,
+        created_at,
+        wisata ( nama_wisata, harga_tiket, foto_url, foto_urls ),
         guides ( tarif_per_hari, users ( nama_lengkap ) )
       `)
       .eq('id', success_booking)
@@ -81,6 +94,26 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
     newBookingDetails = data as unknown as CustomerBooking | null
   }
 
+  // 3. Normalisasi data ke format yang dipakai CustomerDashboardClient
+  const bookingsForClient: CustomerBookingClient[] = bookings.map((b) => {
+    const fotoUrls = Array.isArray(b.wisata?.foto_urls)
+      ? (b.wisata!.foto_urls as unknown[]).filter((u): u is string => typeof u === 'string')
+      : []
+    const fotoWisataUrl = fotoUrls[0] ?? b.wisata?.foto_url ?? null
+    return {
+      id: b.id,
+      tanggal_kunjungan: b.tanggal_kunjungan,
+      jumlah_tiket: b.jumlah_tiket,
+      total_harga: b.total_harga,
+      status: b.status,
+      created_at: b.created_at,
+      namaWisata: b.wisata?.nama_wisata ?? 'Wisata',
+      fotoWisataUrl,
+      namaCustomer,
+      namaGuide: b.guides?.users?.nama_lengkap ?? null,
+    }
+  })
+
   return (
     <div className="space-y-8 relative">
       {/* SUCCESS CONFIRMATION BANNER */}
@@ -88,7 +121,7 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
         <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl animate-fade-in">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-6 h-6" />
+              <CheckCircle2 className="w-6 h-6" />
             </div>
             <div className="space-y-1">
               <h2 className="text-base font-bold text-emerald-400">Transaksi Berhasil Dibuat!</h2>
@@ -150,73 +183,7 @@ export default async function CustomerDashboardPage({ searchParams }: PageProps)
             </div>
           </div>
         ) : (
-          <div className="bg-white/80 border border-slate-200 rounded-2xl overflow-hidden shadow-xl dark:bg-slate-900/30 dark:border-slate-800/80">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
-                    <th className="py-3.5 px-5">Nama Tempat Wisata</th>
-                    <th className="py-3.5 px-5">Tanggal Kunjungan</th>
-                    <th className="py-3.5 px-5 text-center">Jumlah Tiket</th>
-                    <th className="py-3.5 px-5">Tour Guide</th>
-                    <th className="py-3.5 px-5">Total Harga</th>
-                    <th className="py-3.5 px-5 text-center">Status</th>
-                    <th className="py-3.5 px-5 text-center">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-850">
-                  {bookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-slate-50 text-slate-700 transition-colors dark:hover:bg-slate-900/20 dark:text-slate-300">
-                      <td className="py-4 px-5 font-bold text-slate-950 dark:text-white">{booking.wisata?.nama_wisata || 'Wisata'}</td>
-                      <td className="py-4 px-5">
-                        {new Date(booking.tanggal_kunjungan).toLocaleDateString('id-ID', { dateStyle: 'medium' })}
-                      </td>
-                      <td className="py-4 px-5 text-center font-semibold">{booking.jumlah_tiket} pax</td>
-                      <td className="py-4 px-5 text-xs text-slate-500 italic dark:text-slate-400">
-                        {booking.guides?.users?.nama_lengkap ? (
-                          <span className="text-slate-700 not-italic font-medium dark:text-slate-300">{booking.guides.users.nama_lengkap}</span>
-                        ) : (
-                          'Tanpa Guide'
-                        )}
-                      </td>
-                      <td className="py-4 px-5 font-bold text-emerald-400">
-                        Rp {booking.total_harga.toLocaleString('id-ID')}
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          booking.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                          booking.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                          'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                        }`}>
-                          {booking.status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        {booking.status === 'pending' && (
-                          <Link
-                            href={`/checkout/qris/${booking.id}`}
-                            className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <ArrowRight className="w-3.5 h-3.5" />
-                            <span>Bayar</span>
-                          </Link>
-                        )}
-                        {booking.status === 'success' && (
-                          <span className="text-slate-500 text-xs flex items-center justify-center gap-0.5">
-                            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-                            <span>Lunas</span>
-                          </span>
-                        )}
-                        {booking.status === 'cancelled' && (
-                          <span className="text-slate-600 text-xs">Dibatalkan</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <CustomerDashboardClient bookings={bookingsForClient} />
         )}
       </div>
     </div>
