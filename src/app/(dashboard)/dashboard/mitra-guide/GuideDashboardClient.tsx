@@ -5,6 +5,7 @@ import { updateGuideProfileAction, toggleGuideAvailabilityAction } from './actio
 import { Compass, Award, DollarSign, Check, AlertCircle, RefreshCw, Eye, Sparkles, UserRound, Calendar, Users, CalendarCheck, Camera, ImageIcon, X as XIcon, ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { convertHeicToJpeg } from '@/lib/heicToJpeg'
 
 interface GuideProfile {
   id: string
@@ -132,9 +133,11 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
   }
 
   // Handler saat user memilih foto profil baru
-  const handleFotoProfilChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFotoProfilChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.files?.[0]
+    if (!raw) return
+    // Konversi HEIC/HEIF → JPEG sebelum preview dan upload
+    const file = await convertHeicToJpeg(raw)
     // Revoke object URL sebelumnya agar tidak memory leak
     if (fotoProfilPreview && fotoProfilPreview.startsWith('blob:')) {
       URL.revokeObjectURL(fotoProfilPreview)
@@ -144,9 +147,11 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
   }
 
   // Handler saat user memilih file-file galeri baru
-  const handleGaleriChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length === 0) return
+  const handleGaleriChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFiles = Array.from(e.target.files || [])
+    if (rawFiles.length === 0) return
+    // Konversi semua file HEIC/HEIF → JPEG secara paralel
+    const files = await Promise.all(rawFiles.map(convertHeicToJpeg))
     // Revoke object URL lama
     galeriPreviews.forEach((url) => URL.revokeObjectURL(url))
     const previews = files.map((f) => URL.createObjectURL(f))
@@ -517,7 +522,7 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                         <input
                           id="foto_profil_input"
                           type="file"
-                          accept="image/*"
+                          accept="image/*,.heic,.heif"
                           disabled={!isEditing}
                           onChange={handleFotoProfilChange}
                           className="sr-only"
@@ -596,7 +601,7 @@ export default function GuideDashboardClient({ guideProfile, userData, bookings,
                     <input
                       id="galeri_input"
                       type="file"
-                      accept="image/*"
+                      accept="image/*,.heic,.heif"
                       multiple
                       disabled={!isEditing}
                       onChange={handleGaleriChange}

@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { BookingRow } from './page'
+import { convertHeicToJpeg } from '@/lib/heicToJpeg'
 
 interface Wisata {
   id: string
@@ -518,11 +519,12 @@ export default function WisataDashboardClient({ wisataList, bookings, activeTab:
                     <input
                       id="create_foto_input"
                       type="file"
-                      accept="image/*"
+                      accept="image/*,.heic,.heif"
                       className="sr-only"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
+                      onChange={async (e) => {
+                        const raw = e.target.files?.[0]
+                        if (!raw) return
+                        const file = await convertHeicToJpeg(raw)
                         if (createFotoPreview?.startsWith('blob:')) URL.revokeObjectURL(createFotoPreview)
                         setCreateFotoFile(file)
                         setCreateFotoPreview(URL.createObjectURL(file))
@@ -551,12 +553,13 @@ export default function WisataDashboardClient({ wisataList, bookings, activeTab:
                 <input
                   id="create_galeri_input"
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.heic,.heif"
                   multiple
                   className="sr-only"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || [])
-                    if (files.length === 0) return
+                  onChange={async (e) => {
+                    const rawFiles = Array.from(e.target.files || [])
+                    if (rawFiles.length === 0) return
+                    const files = await Promise.all(rawFiles.map(convertHeicToJpeg))
                     createGaleriPreviews.forEach((u) => { if (u.startsWith('blob:')) URL.revokeObjectURL(u) })
                     setCreateGaleriFiles(files)
                     setCreateGaleriPreviews(files.map((f) => URL.createObjectURL(f)))
@@ -654,11 +657,12 @@ export default function WisataDashboardClient({ wisataList, bookings, activeTab:
                     <input
                       id="edit_foto_input"
                       type="file"
-                      accept="image/*"
+                      accept="image/*,.heic,.heif"
                       className="sr-only"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
+                      onChange={async (e) => {
+                        const raw = e.target.files?.[0]
+                        if (!raw) return
+                        const file = await convertHeicToJpeg(raw)
                         if (editFotoPreview?.startsWith('blob:')) URL.revokeObjectURL(editFotoPreview)
                         setEditFotoFile(file)
                         setEditFotoPreview(URL.createObjectURL(file))
@@ -710,12 +714,13 @@ export default function WisataDashboardClient({ wisataList, bookings, activeTab:
                 <input
                   id="edit_galeri_input"
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.heic,.heif"
                   multiple
                   className="sr-only"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || [])
-                    if (files.length === 0) return
+                  onChange={async (e) => {
+                    const rawFiles = Array.from(e.target.files || [])
+                    if (rawFiles.length === 0) return
+                    const files = await Promise.all(rawFiles.map(convertHeicToJpeg))
                     editGaleriPreviews.forEach((u) => { if (u.startsWith('blob:')) URL.revokeObjectURL(u) })
                     setEditGaleriFiles(files)
                     setEditGaleriPreviews(files.map((f) => URL.createObjectURL(f)))

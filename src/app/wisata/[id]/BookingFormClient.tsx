@@ -11,6 +11,7 @@ interface Wisata {
   deskripsi: string
   harga_tiket: number
   kuota_harian: number
+  sisaKuota: number
   foto_url: string | null
   foto_urls?: string[] | null
   lokasi?: string | null
@@ -96,7 +97,9 @@ export default function BookingFormClient({ wisata, guides }: Props) {
               </div>
               <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/50">
                 <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Sisa Kuota</span>
-                <strong className="mt-1 block text-lg text-slate-950 dark:text-white">{wisata.kuota_harian} pax</strong>
+                <strong className={`mt-1 block text-lg ${wisata.sisaKuota === 0 ? 'text-red-500' : 'text-slate-950 dark:text-white'}`}>
+                  {wisata.sisaKuota} pax
+                </strong>
               </div>
             </div>
           </div>
@@ -164,7 +167,9 @@ export default function BookingFormClient({ wisata, guides }: Props) {
               <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 dark:bg-slate-950/50 dark:border-slate-800">
                 <Users className="w-5 h-5 text-emerald-400 mb-3" />
                 <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Sisa Kuota Harian</span>
-                <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">{wisata.kuota_harian} pengunjung</p>
+                <p className={`mt-1 text-sm font-semibold ${wisata.sisaKuota === 0 ? 'text-red-500' : 'text-slate-950 dark:text-white'}`}>
+                  {wisata.sisaKuota === 0 ? 'Penuh' : `${wisata.sisaKuota} pengunjung`}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 dark:bg-slate-950/50 dark:border-slate-800">
                 <Ticket className="w-5 h-5 text-emerald-400 mb-3" />
@@ -231,7 +236,7 @@ export default function BookingFormClient({ wisata, guides }: Props) {
                     required
                     value={jumlahTiket}
                     onChange={(e) => setJumlahTiket(Math.max(1, parseInt(e.target.value) || 1))}
-                    max={wisata.kuota_harian}
+                    max={wisata.sisaKuota}
                     className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all duration-200 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
                   />
                 </div>

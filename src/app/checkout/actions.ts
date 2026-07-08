@@ -18,17 +18,67 @@ export async function simulateQrisPaymentAction(formData: FormData) {
     redirect('/login')
   }
 
-  const { error } = await supabase
+  // ── Ambil detail booking terlebih dahulu ────────────────────────────
+  // Kita butuh wisata_id, jumlah_tiket, dan status saat ini sebelum update.
+  const { data: booking, error: bookingFetchErr } = await supabase
+    .from('bookings')
+    .select('id, status, wisata_id, jumlah_tiket')
+    .eq('id', bookingId)
+    .eq('customer_id', user.id)
+    .single()
+
+  if (bookingFetchErr || !booking) {
+    redirect(`/checkout/qris/${bookingId}?error=${encodeURIComponent('Booking tidak ditemukan.')}`)
+  }
+
+  // Jika sudah lunas sebelumnya, langsung redirect ke success
+  if (booking.status === 'success') {
+    redirect(`/checkout/success?booking_id=${bookingId}`)
+  }
+
+  // ── Validasi ulang kuota sebelum konfirmasi pembayaran ──────────────
+  // Kuota = kuota_harian wisata di DB (statis, tidak berubah).
+  // Tiket terjual = SUM jumlah_tiket dari bookings berstatus success PADA wisata ini.
+  // Ini lebih akurat daripada decrement kolom karena tahan race condition.
+  const { data: wisata, error: wisataErr } = await supabase
+    .from('wisata')
+    .select('kuota_harian')
+    .eq('id', booking.wisata_id)
+    .single()
+
+  if (wisataErr || !wisata) {
+    redirect(`/checkout/qris/${bookingId}?error=${encodeURIComponent('Data destinasi tidak ditemukan.')}`)
+  }
+
+  // Hitung total tiket yang sudah lunas untuk wisata ini (excludes booking ini sendiri)
+  const { data: soldTickets } = await supabase
+    .from('bookings')
+    .select('jumlah_tiket')
+    .eq('wisata_id', booking.wisata_id)
+    .eq('status', 'success')
+
+  const totalTerjual = soldTickets?.reduce((sum, b) => sum + b.jumlah_tiket, 0) ?? 0
+  const sisaKuota = wisata.kuota_harian - totalTerjual
+
+  if (booking.jumlah_tiket > sisaKuota) {
+    const msg = `Kuota tidak mencukupi. Sisa kuota yang tersedia adalah ${sisaKuota} tiket, sedangkan pesanan Anda ${booking.jumlah_tiket} tiket.`
+    redirect(`/checkout/qris/${bookingId}?error=${encodeURIComponent(msg)}`)
+  }
+
+  // ── Update status booking → success ────────────────────────────────
+  const { error: updateErr } = await supabase
     .from('bookings')
     .update({ status: 'success' })
     .eq('id', bookingId)
     .eq('customer_id', user.id)
 
-  if (error) {
+  if (updateErr) {
     redirect(`/checkout/qris/${bookingId}?error=${encodeURIComponent('Gagal memproses pembayaran demo.')}`)
   }
 
   revalidatePath('/dashboard/customer')
   revalidatePath(`/checkout/qris/${bookingId}`)
+  revalidatePath('/wisata')
+  revalidatePath(`/wisata/${booking.wisata_id}`)
   redirect(`/checkout/success?booking_id=${bookingId}`)
 }
